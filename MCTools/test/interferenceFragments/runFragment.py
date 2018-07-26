@@ -3,22 +3,16 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing ('analysis')
 from SHarper.MCTools.mcCmdLineOptions_cfi import registerDefaultMCOptions
 registerDefaultMCOptions(options)
-options.register ('zPrimeModel',
-                  "zPrimeSSM",
+options.register ('fragment',
+                  "ZPrimeSSMToMuMu_ResM7000_M800To1400_Interference_13TeV-pythia8_cff.py",
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,
-                  "which Z' model to use")
-options.register ('interferenceMode',
-                  3,
-                  VarParsing.VarParsing.multiplicity.singleton,
-                  VarParsing.VarParsing.varType.int,          
-                  "Z/gamma/Z' interference setting")
+                  "which generator fragment to run")
 options.parseArguments()
 
 
 import FWCore.ParameterSet.Config as cms
 
-import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('GEN')
 
@@ -40,7 +34,7 @@ process.MessageLogger.cerr.FwkReport = cms.untracked.PSet(
     limit = cms.untracked.int32(10000000)
 )
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(options.maxEvents)
+    input = cms.untracked.int32(10000)
 )
 
 # Input source
@@ -54,165 +48,15 @@ process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'MCRUN2_71_V1::All')
 
-
-dV=0
-dA=0
-uV=0
-uA=0
-eV=0
-eA=0
-nuV=0
-nuA=0
-import math
-if options.zPrimeModel=="zPrimeChi":
-    print "Z' chi "
-    sinThetaW=math.sqrt(0.23)
-    dV=2*math.sqrt(6)*sinThetaW/3
-    dA=-math.sqrt(6)*sinThetaW/3
-    uV=0
-    uA=math.sqrt(6)*sinThetaW/3
-    eV=-dV
-    eA=dA
-    nuV=-math.sqrt(6)*sinThetaW/2;
-    nuA=nuV
-
-    
-elif options.zPrimeModel=="zPrimeEta":
-    print "Z' eta"
-    sinThetaW=math.sqrt(0.23)
-    dV=sinThetaW
-    dA=sinThetaW/3
-    uV=0
-    uA=4*sinThetaW/3
-    eV=-dV
-    eA=dA
-    nuV=-sinThetaW/3;
-    nuA=nuV
-
-elif options.zPrimeModel=="zPrimeI":
-    print "Z' I"
-    sinThetaW=math.sqrt(0.23)
-    
-    dV=math.sqrt(15)/3*sinThetaW
-    dA=-math.sqrt(15)/3*sinThetaW
-    uV=0
-    uA=0
-    eV=-dV
-    eA=dA
-    nuV=eV
-    nuA=eA
-    
-elif options.zPrimeModel=="zPrimeSQ":
-    print "Z' SQ"
-    sinThetaW=math.sqrt(0.23)
-    
-    dV=3/2*sinThetaW
-    dA=-7/6*sinThetaW
-    uV=0
-    uA=sinThetaW/3
-    eV=-dV
-    eA=dA
-    nuV=-4/3*sinThetaW
-    nuA=-4/3*sinThetaW
-
-elif options.zPrimeModel=="zPrimeN":
-    print "Z' N"
-    sinThetaW=math.sqrt(0.23)
-    
-    dV=-math.sqrt(6)/6*sinThetaW
-    dA=math.sqrt(6)/2*sinThetaW
-    uV=0
-    uA=math.sqrt(6)/3*sinThetaW
-    eV=-dV
-    eA=dA
-    nuV=math.sqrt(6)/3*sinThetaW
-    nuA=math.sqrt(6)/3*sinThetaW
-
-elif options.zPrimeModel=="zPrimePSI":
-    print "Z' PSI"
-    dV=0
-    dA=0.506809
-    uV=0
-    uA=0.506809
-    eV=0
-    eA=0.506809
-    nuV=0.253405
-    nuA=0.253405
-
-elif options.zPrimeModel=="zPrimeSSM":
-    print "Z' SSM"
-    dV = -0.693
-    dA = -1.
-    uV = 0.387
-    uA = 1.
-    eV = -0.08
-    eA = -1.
-    nuV = 1
-    nuA = 1
- 
-elif options.zPrimeModel=="zPrimeQ":
-    print "Z' Q"
-    dV = -1.333
-    dA = 0.
-    uV = 2.666
-    uA = 0.
-    eV = -4.0
-    eA = 0
-    nuV = 0
-    nuA = 0
-    
-else:
-    print options.zPrimeModel, " not recongised"
-
-
-print dV,dA
-process.generator = cms.EDFilter("Pythia8GeneratorFilter",
-        comEnergy = cms.double(options.comEnergy*1000),
-        crossSection = cms.untracked.double(1e10),
-        filterEfficiency = cms.untracked.double(1),
-        maxEventsToPrint = cms.untracked.int32(0),
-        pythiaHepMCVerbosity = cms.untracked.bool(False),
-        pythiaPylistVerbosity = cms.untracked.int32(1),
-        PythiaParameters = cms.PSet(
-                processParameters = cms.vstring(
-                        'Main:timesAllowErrors    = 10000',
-                        'ParticleDecays:limitTau0 = on',
-                        'ParticleDecays:tauMax = 10',
-                        'Tune:pp 5',
-                        'Tune:ee 3',
-                      #  'PDF:pSet = '+str(options.pdfSet),
-                        'PDF:useHard = on',
-                        'PDF:pHardSet = '+str(options.pdfSet),
-                        'NewGaugeBoson:ffbar2gmZZPrime = on',
-                        'Zprime:gmZmode = '+str(options.interferenceMode),
-                        'Zprime:universality = on',
-                        'Zprime:vd='+str(dV),
-                        'Zprime:ad='+str(dA),
-                        'Zprime:vu='+str(uV),
-                        'Zprime:au='+str(uA),
-                        'Zprime:ve='+str(eV),
-                        'Zprime:ae='+str(eA),
-                        'Zprime:vnue='+str(nuV),
-                        'Zprime:anue='+str(nuA),
-                        '32:m0 = '+str(options.mass),
-                        '32:onMode = off',
-                        '32:onIfAny = 11',
-                        'PhaseSpace:mHatMin = '+str(options.minMass),
-                        'PhaseSpace:mHatMax = '+str(options.maxMass),
-
-                ),
-                parameterSets = cms.vstring('processParameters')
-        )
-)
-
+process.load(options.fragment.split(".")[0])
 
 process.ProductionFilterSequence = cms.Sequence(process.generator)
 datasetCode=10001
 process.crossSecTreeMaker =  cms.EDAnalyzer("CrossSecTreeMaker",
-                                            mass=cms.double(options.mass),
-                                            datasetName=cms.string(options.zPrimeModel+"Inter"+str(options.interferenceMode)),
+                                            mass=cms.double(float(options.fragment.split("_")[1].split("ResM")[-1])),
+                                            datasetName=cms.string(options.fragment.split(".")[0]+".root"),
                                             datasetCode=cms.int32(datasetCode),
-                                            cmsEnergy=cms.double(options.comEnergy)
+                                            cmsEnergy=cms.double(13)
                                             )
 
 process.pdfTreeMaker = cms.EDAnalyzer("PDFTreeMaker",
@@ -242,7 +86,7 @@ process.pdfWeights = cms.EDProducer("PdfWeightProducer",
 
 if options.cmsswOutput:
     process.outputTot = cms.OutputModule( "PoolOutputModule",
-                                          fileName = cms.untracked.string(options.outFile ),
+                                          fileName = cms.untracked.string(options.fragment.split(".")[0]+".root" ),
                                           fastCloning = cms.untracked.bool( False ),
                                           dataset = cms.untracked.PSet(
                                               filterName = cms.untracked.string( "" ),
@@ -254,7 +98,7 @@ if options.cmsswOutput:
 else:
     
     process.TFileService = cms.Service("TFileService",
-                                       fileName = cms.string(options.outFile)
+                                       fileName = cms.string(options.fragment.split(".")[0]+".root")
                                        )
     outputMod = process.TFileService
 
