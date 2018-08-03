@@ -118,7 +118,7 @@ def setZPrimeParams(model):
 	    result["nuV"]=0.253405
 	    result["nuA"]=0.253405
 
-	elif model=="ZPrimeSSM":
+	elif model=="ZPrimeSSM" or model=="DY":
 	    print "Z' SSM"
 	    result["dV"] = -0.693
 	    result["dA"] = -1.
@@ -142,9 +142,9 @@ def setZPrimeParams(model):
 	    
 	return result
 interference = 0 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
-masses = [1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000]
+masses = [1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
-models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi"]
+models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi","DY"]
 decays = {"EE":11,"MuMu":13}
 for mass in masses:
 	for i in range(0,len(massBins)-1):
@@ -156,10 +156,35 @@ for mass in masses:
 				params["maxMass"] = massBins[i+1]
 				params["decay"] = decayN
 				params["interference"] = interference
+				if model == "DY":
+					params["interference"] = 4
 				fragment = template%params
-				if massBins[i+1] == -1:
-					f = open("%sTo%s_ResM%d_M%dToInf_Interference_13TeV-pythia8_cff.py"%(model,decay,mass,massBins[i]),"w")
+				if model == "DY":
+					if massBins[i+1] == -1:
+						f = open("%sTo%s_M%dToInf_13TeV-pythia8_cff.py"%(model,decay,massBins[i]),"w")
+					else:
+						f = open("%sTo%s_M%dTo%d_13TeV-pythia8_cff.py"%(model,decay,massBins[i],massBins[i+1]),"w")
 				else:
-					f = open("%sTo%s_ResM%d_M%dTo%d_Interference_13TeV-pythia8_cff.py"%(model,decay,mass,massBins[i],massBins[i+1]),"w")
+					if massBins[i+1] == -1:
+						f = open("%sTo%s_ResM%d_M%dToInf_Interference_13TeV-pythia8_cff.py"%(model,decay,mass,massBins[i]),"w")
+					else:
+						f = open("%sTo%s_ResM%d_M%dTo%d_Interference_13TeV-pythia8_cff.py"%(model,decay,mass,massBins[i],massBins[i+1]),"w")
 				f.write(fragment)
 				f.close()
+
+
+interference = 3 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
+for mass in masses:
+	for model in models:
+		for decay, decayN in decays.iteritems():
+			if model == "DY": continue
+			params = setZPrimeParams(model)
+			params["mass"] = mass
+			params["minMass"] = -1
+			params["maxMass"] = -1
+			params["decay"] = decayN
+			params["interference"] = interference
+			fragment = template%params
+			f = open("%sTo%s_ResM%d_13TeV-pythia8_cff.py"%(model,decay,mass),"w")
+			f.write(fragment)
+			f.close()

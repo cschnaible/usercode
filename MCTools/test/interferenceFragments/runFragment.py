@@ -52,8 +52,12 @@ process.load(options.fragment.split(".")[0])
 
 process.ProductionFilterSequence = cms.Sequence(process.generator)
 datasetCode=10001
+if "ResM" in options.fragment:
+	massVal = float(options.fragment.split("_")[1].split("ResM")[-1])
+else:
+	massVal = 91.2
 process.crossSecTreeMaker =  cms.EDAnalyzer("CrossSecTreeMaker",
-                                            mass=cms.double(float(options.fragment.split("_")[1].split("ResM")[-1])),
+                                            mass=cms.double(massVal),
                                             datasetName=cms.string(options.fragment.split(".")[0]+".root"),
                                             datasetCode=cms.int32(datasetCode),
                                             cmsEnergy=cms.double(13)
@@ -124,3 +128,4 @@ process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary
 for path in process.paths:
 	getattr(process,path)._seq = process.ProductionFilterSequence * getattr(process,path)._seq 
 
+print process.dumpPython()
