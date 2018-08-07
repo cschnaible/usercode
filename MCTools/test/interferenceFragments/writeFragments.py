@@ -42,6 +42,24 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
 )
 '''
 
+# Reference https://arxiv.org/abs/1010.6058 has numerical couplings 
+# calculated using formulation similar to Halzen & Martin: gV, gA
+# Using reference http://inspirehep.net/record/689807 to convert 
+# to Pythia definitions of couplings: cV, cA
+def cVcA_LR(VA):
+    # cV = 2*cos(W)*gV*(gZp/gSU2)
+    # cA = 2*cos(W)*gA*(gZp/gSU2)
+    # gZp = 0.595, gSU2 = 0.652
+    gLR = 0.595
+    return 2*cosW*VA*(gLR/gSU2)
+
+def cVcA_SM(VA):
+    # cV = 2*gV
+    # cA = 2*gA
+    # simplifies from gZp = gSU2/cosW
+    return 2*VA
+
+
 def setZPrimeParams(model):
 	result = {}
 	if model=="ZPrimeChi":
@@ -139,6 +157,59 @@ def setZPrimeParams(model):
 	    result["eA"] = 0
 	    result["nuV"] = 0
 	    result["nuA"] = 0
+	elif model=="ZPrimeT3L":
+	    print "Z' T3L"
+	    result["dV"] = cVcA_SM(-0.5)
+	    result["dA"] = cVcA_SM(-0.5)
+	    result["uV"] = cVcA_SM(0.5)
+	    result["uA"] = cVcA_SM(0.5)
+	    result["eV"] = cVcA_SM(-0.5)
+	    result["eA"] = cVcA_SM(-0.5)
+	    result["nuV"] = cVcA_SM(0.5)
+	    result["nuA"] = cVcA_SM(0.5)
+	
+	elif model=="ZprimeR":
+	    print "Z' R"
+	    result["dV"] = cVcA_LR(-0.5)
+	    result["dA"] = cVcA_LR(0.5)
+	    result["uV"] =  cVcA_LR(0.5)
+	    result["uA"] =  cVcA_LR(-0.5)
+	    result["eV"] =  cVcA_LR(-0.5)
+	    result["eA"] =  cVcA_LR(0.5)
+	    result["nuV"] =  cVcA_LR(0.)
+	    result["nuA"] =  cVcA_LR(0.)
+	elif model=="ZprimeLR":
+	    print "Z' LR"
+	    result["dV"] = cVcA_LR(-0.591)
+	    result["dA"] = cVcA_LR(0.46)
+	    result["uV"] = cVcA_LR(0.329)
+	    result["uA"] = cVcA_LR(-0.46)
+	    result["eV"] = cVcA_LR(0.068)
+	    result["eA"] = cVcA_LR(0.46)
+	    result["nuV"] = cVcA_LR(0.196)
+	    result["nuA"] = cVcA_LR(0.196)
+
+	elif model=="ZprimeY":
+	    print "Z' Y"
+	    result["dV"] = cVcA_LR(-0.167)
+	    result["dA"] = cVcA_LR(0.5)
+	    result["uV"] = cVcA_LR(0.833)
+	    result["uA"] = cVcA_LR(-0.5)
+	    result["eV"] = cVcA_LR(-1.5)
+	    result["eA"] = cVcA_LR(0.5)
+	    result["nuV"] = cVcA_LR(-0.5) 
+	    result["nuA"] =  cVcA_LR(-0.5)
+	    
+	elif model=="ZprimeB-L":
+	    print "Z' B-L"
+	    result["dV"] = cVcA_LR(0.333)
+	    result["dA"] = cVcA_LR(0.)
+	    result["uV"] = cVcA_LR(0.333)
+	    result["uA"] = cVcA_LR(0.)
+	    result["eV"] = cVcA_LR(-1.)
+	    result["eA"] = cVcA_LR(0.)
+	    result["nuV"] = cVcA_LR(-0.5)
+	    result["nuA"] = cVcA_LR(-0.5)
 	    
 	return result
 interference = 0 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
