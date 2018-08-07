@@ -47,6 +47,7 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
 # Using reference http://inspirehep.net/record/689807 to convert 
 # to Pythia definitions of couplings: cV, cA
 def cVcA_LR(VA):
+    cosW = math.sqrt(1-0.2312)
     # cV = 2*cos(W)*gV*(gZp/gSU2)
     # cA = 2*cos(W)*gA*(gZp/gSU2)
     # gZp = 0.595, gSU2 = 0.652
