@@ -51,7 +51,7 @@ def cVcA_LR(VA):
     # cV = 2*cos(W)*gV*(gZp/gSU2)
     # cA = 2*cos(W)*gA*(gZp/gSU2)
     # gZp = 0.595, gSU2 = 0.652
-    gLR = 0.595
+    gLR,gSU2 = 0.595, 0.652
     return 2*cosW*VA*(gLR/gSU2)
 
 def cVcA_SM(VA):
@@ -169,7 +169,7 @@ def setZPrimeParams(model):
 	    result["nuV"] = cVcA_SM(0.5)
 	    result["nuA"] = cVcA_SM(0.5)
 	
-	elif model=="ZprimeR":
+	elif model=="ZPrimeR":
 	    print "Z' R"
 	    result["dV"] = cVcA_LR(-0.5)
 	    result["dA"] = cVcA_LR(0.5)
@@ -179,7 +179,8 @@ def setZPrimeParams(model):
 	    result["eA"] =  cVcA_LR(0.5)
 	    result["nuV"] =  cVcA_LR(0.)
 	    result["nuA"] =  cVcA_LR(0.)
-	elif model=="ZprimeLR":
+
+	elif model=="ZPrimeLR":
 	    print "Z' LR"
 	    result["dV"] = cVcA_LR(-0.591)
 	    result["dA"] = cVcA_LR(0.46)
@@ -190,7 +191,7 @@ def setZPrimeParams(model):
 	    result["nuV"] = cVcA_LR(0.196)
 	    result["nuA"] = cVcA_LR(0.196)
 
-	elif model=="ZprimeY":
+	elif model=="ZPrimeY":
 	    print "Z' Y"
 	    result["dV"] = cVcA_LR(-0.167)
 	    result["dA"] = cVcA_LR(0.5)
@@ -201,7 +202,7 @@ def setZPrimeParams(model):
 	    result["nuV"] = cVcA_LR(-0.5) 
 	    result["nuA"] =  cVcA_LR(-0.5)
 	    
-	elif model=="ZprimeB-L":
+	elif model=="ZPrimeB-L":
 	    print "Z' B-L"
 	    result["dV"] = cVcA_LR(0.333)
 	    result["dA"] = cVcA_LR(0.)
@@ -216,7 +217,7 @@ def setZPrimeParams(model):
 interference = 0 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
 masses = [1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
-models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi","DY"]
+models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi","DY","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
 decays = {"EE":11,"MuMu":13}
 for mass in masses:
 	for i in range(0,len(massBins)-1):

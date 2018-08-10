@@ -1,7 +1,7 @@
 
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing ('analysis')
-from SHarper.MCTools.mcCmdLineOptions_cfi import registerDefaultMCOptions
+from usercode.MCTools.mcCmdLineOptions_cfi import registerDefaultMCOptions
 registerDefaultMCOptions(options)
 options.register ('fragment',
                   "ZPrimeSSMToMuMu_ResM7000_M800To1400_Interference_13TeV-pythia8_cff.py",
