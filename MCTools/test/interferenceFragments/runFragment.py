@@ -8,6 +8,11 @@ options.register ('fragment',
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,
                   "which generator fragment to run")
+options.register ('decay',
+                  11,
+                  VarParsing.VarParsing.multiplicity.singleton,
+                  VarParsing.VarParsing.varType.int,
+                  "How to decay DY or Zprime")
 options.parseArguments()
 
 
@@ -34,7 +39,7 @@ process.MessageLogger.cerr.FwkReport = cms.untracked.PSet(
     limit = cms.untracked.int32(10000000)
 )
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10000)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
@@ -66,7 +71,7 @@ process.crossSecTreeMaker =  cms.EDAnalyzer("CrossSecTreeMaker",
 process.pdfTreeMaker = cms.EDAnalyzer("PDFTreeMaker",
                                       datasetCode=cms.int32(datasetCode),
                                       genPartsTag=cms.InputTag("genParticles"),
-                                      decayParticlePID = cms.int32(11),
+                                      decayParticlePID = cms.int32(options.decay),
                                       genEvtInfoTag = cms.InputTag("generator"),
                                       pdfWeightsTag=cms.InputTag("dummy"),
                                      #  pdfWeightsTag=cms.InputTag("pdfWeights:MRST2006nnlo")

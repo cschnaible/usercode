@@ -215,9 +215,11 @@ def setZPrimeParams(model):
 	    
 	return result
 interference = 0 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
-masses = [1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
+#masses = [1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
+masses = [4000,4500,5000,5500,6000,6500,7000,7500,8000]
 massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
-models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi","DY","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
+#models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi","DY","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
+models = ["ZPrimeQ","ZPrimeSSM","ZPrimeSQ","DY","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
 decays = {"EE":11,"MuMu":13}
 for mass in masses:
 	for i in range(0,len(massBins)-1):
