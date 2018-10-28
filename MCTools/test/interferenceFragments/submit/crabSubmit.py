@@ -7,7 +7,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 #config.section_("General")
-config.General.requestName = '%s_20180827'
+config.General.requestName = '%s_20180926'
 config.General.workArea = 'crab'
 config.General.transferOutputs = True
 
@@ -34,14 +34,19 @@ config.Site.storageSite = "T2_CH_CERN"
 '''
 
 
+# ZPrimeLRToMuMu_ResM7500_M400To800_Interference
 interference = 0 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
 #masses = [1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 masses = [4000,4500,5000,5500,6000,6500,7000,7500,8000]
+#masses = [7500]
 massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
-#models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
-models = ["ZPrimeQ","ZPrimeSSM","ZPrimeSQ","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
+#massBins = [400,800]
+models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
+#models = ["ZPrimeQ","ZPrimeSSM","ZPrimeSQ","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
+#models = ['ZPrimeT3L']
 #decays = {"EE":11}
 decays = {"EE":11,"MuMu":13}
+#decays = {"MuMu":13}
 if True:
 	for mass in masses:
 		for i in range(0,len(massBins)-1):
@@ -67,6 +72,7 @@ if True:
 					print outName
 					print
 					subprocess.call(["crab","submit","crabCfg.py"])
+					exit()
 
 	for mass in masses:
 		for model in models:

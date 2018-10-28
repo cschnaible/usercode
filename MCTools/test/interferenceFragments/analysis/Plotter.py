@@ -24,7 +24,7 @@ def globalSetStyle():
     style.SetNumberContours(100)
 
     # generic line thicknesses
-    style.SetLineWidth(2)
+    style.SetLineWidth(1)
 
     # canvas
     style.SetCanvasBorderMode(0)             # off
@@ -203,6 +203,30 @@ class Plot(object):
         for axis,title in zip(('X', 'Y', 'Z'),(X, Y, Z)):
             if title is not None: getattr(self, 'Get'+axis+'axis')().SetTitle(title)
 
+class Stack(object):
+    def __init__(self,plot,option=''):
+        self.plot = plot
+        self.option = option
+
+    def __getattr__(self,name):
+        return getattr(self.plot, name)
+
+    # Because ROOT developers are sadists you cannot explicitly set the y-axis range.
+    # They want you to lose an afternoon of work before finding this page on the forum:
+    # https://root-forum.cern.ch/t/trouble-w-stackhistograms/12390
+    # Which explains why you cannot set the range explicitly and instead need to 
+    # work around their dumb attempts to "make the plot look nicer" for you.
+    # Still, for some reason it is still just ever so slightly not correct
+    # even with this work around. Boo.
+    def setRange(self,logy,themin,themax):
+        if logy:
+            ratio = float(themax)/float(themin)
+            self.plot.SetMaximum(themax/(1.0+0.2*R.TMath.Log10(ratio)))
+            self.plot.SetMinimum(themin*(1.0+0.5*R.TMath.Log10(ratio)))
+        else:
+            self.plot.SetMaximum(themax/(1.+R.gStyle.GetHistTopMargin()))
+            self.plot.SetMinimum(themin)
+
 # Enhances a TLegend, providing some much needed geometry functionality
 # X1, X2, Y1, Y2 construct the parent TLegend object; corner is a pos string (see Canvas)
 class Legend(R.TLegend):
@@ -229,7 +253,7 @@ class Legend(R.TLegend):
     def resizeHeight(self, scale=1.):
         fontsize = self.GetTextSize()
         oldheight = self.GetY2() - self.GetY1()
-        newheight = self.lines * fontsize * scale * 1.1
+        newheight = self.lines * fontsize * scale * 1.25
         resize = newheight - oldheight
         # Assume the anchoring corner is in the correct spot
         if self.corner[0] == 't':
@@ -328,16 +352,17 @@ class Canvas(R.TCanvas):
     # sets the canvas maximum to 5% above the maximum of all the plots in plotList
     # recompute forces recomputation of the maximum (if it's wrong, for example)
     # cjs - I like 10% above the maximum more
-    def setMaximum(self, recompute=False):
+    # cjs - factor above maximum is also changable
+    def setMaximum(self, recompute=False,factor=1.1):
         if not recompute:
-            self.firstPlot.SetMaximum(1.1 * max([p.GetMaximum() for p in self.plotList]))
+            self.firstPlot.SetMaximum(factor * max([p.GetMaximum() for p in self.plotList]))
         else:
             realMax = 0.
             for p in self.plotList:
                 for ibin in xrange(1, p.GetNbinsX()+1):
                     if p.GetBinContent(ibin) > realMax:
                         realMax = p.GetBinContent(ibin)
-            self.firstPlot.SetMaximum(1.1 * realMax)
+            self.firstPlot.SetMaximum(factor * realMax)
 
     # creates the legend
     # lWidth is width as fraction of pad; height defaults to 0.2, offset defaults to 0.03
@@ -443,7 +468,8 @@ class Canvas(R.TCanvas):
             self.rat.GetYaxis().CenterTitle()
             self.rat.GetYaxis().SetNdivisions(505)
             self.rat.GetYaxis().SetRangeUser(center-plusminus,center+plusminus)
-            self.rat.GetXaxis().SetLabelSize(2*self.fontsize)#, 'XYZ')      # default 0.04
+            self.rat.GetXaxis().SetLabelSize(factor*self.fontsize)#, 'XYZ')      # default 0.04
+            self.rat.GetYaxis().SetLabelSize(factor*self.fontsize)#, 'XYZ')      # default 0.04
 
             self.rat.Draw(option)
             self.ratAxesDrawn = True
@@ -596,6 +622,15 @@ class Canvas(R.TCanvas):
 
         # make sure you keep a reference to this or the text will disappear
         return pave
+
+    # Draw the frame exactly how you want it
+    def setFrame(self,xlo,ylo,xhi,yhi):
+        self.cd()
+        self.mainPad.cd()
+        self.mainPad.DrawFrame(xlo,ylo,xhi,yhi)
+        self.mainPad.Modified()
+        self.mainPad.Update()
+        self.cd()
     
     # draws the lumi text, 'CMS', extra text, and legend 
     def finishCanvas(self, mode='', extrascale=1., drawCMS=True):
@@ -603,6 +638,7 @@ class Canvas(R.TCanvas):
         self.moveExponent()
         self.cd()
         self.mainPad.cd()
+        #self.mainPad.Update()
 
         tBaseline = 1-self.margins['t']+0.02
         LEFT, RIGHT = self.margins['l'], 1-self.margins['r']
@@ -622,7 +658,7 @@ class Canvas(R.TCanvas):
 
         if self.legend is not None:
             self.legend.Draw()
-        if self.ratLegend is not None:
+        if self.ratioFactor>0 and self.ratLegend is not None:
             self.cd()
             self.ratPad.cd()
             self.ratLegend.Draw()
@@ -647,8 +683,8 @@ class Canvas(R.TCanvas):
         R.gROOT.ProcessLine('delete gROOT->FindObject("c");')
 
     # performs a standard finishCanvas, save, and delete
-    def cleanup(self, filename):
-        self.finishCanvas()
+    def cleanup(self, filename, mode=''):
+        self.finishCanvas(mode)
         #R.SetOwnership(self, False)
         self.save(filename)
         self.deleteCanvas()

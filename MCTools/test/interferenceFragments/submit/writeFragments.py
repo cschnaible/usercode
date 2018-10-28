@@ -14,8 +14,8 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
         pythiaPylistVerbosity = cms.untracked.int32(1),
         PythiaParameters = cms.PSet(
 	        pythia8CommonSettingsBlock,
-		pythia8CUEP8M1SettingsBlock,
-                processParameters = cms.vstring(
+            pythia8CUEP8M1SettingsBlock,
+            processParameters = cms.vstring(
                         'NewGaugeBoson:ffbar2gmZZPrime = on',
                         'Zprime:gmZmode = %(interference)d',
                         'Zprime:universality = on',
@@ -33,11 +33,11 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
                         'PhaseSpace:mHatMin = %(minMass)d',
                         'PhaseSpace:mHatMax = %(maxMass)d',
 
-                ),
+            ),
         	parameterSets = cms.vstring('pythia8CommonSettings',
 	                                    'pythia8CUEP8M1Settings',
         	                            'processParameters',
-		)
+            )
 	)
 )
 '''
@@ -216,11 +216,15 @@ def setZPrimeParams(model):
 	return result
 interference = 0 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
 #masses = [1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
-masses = [4000,4500,5000,5500,6000,6500,7000,7500,8000]
-massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
+#masses = [4000,4500,5000,5500,6000,6500,7000,7500,8000]
+masses = [7500]
+#massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
+massBins = [400,800]
 #models = ["ZPrimeQ","ZPrimeSSM","ZPrimePSI","ZPrimeN","ZPrimeSQ","ZPrimeI","ZPrimeEta","ZPrimeChi","DY","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
-models = ["ZPrimeQ","ZPrimeSSM","ZPrimeSQ","DY","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
-decays = {"EE":11,"MuMu":13}
+#models = ["ZPrimeQ","ZPrimeSSM","ZPrimeSQ","DY","ZPrimeR","ZPrimeB-L","ZPrimeLR","ZPrimeY","ZPrimeT3L"]
+models = ["ZPrimeT3L"]
+#decays = {"EE":11,"MuMu":13}
+decays = {"MuMu":13}
 for mass in masses:
 	for i in range(0,len(massBins)-1):
 		for model in models:
@@ -246,6 +250,7 @@ for mass in masses:
 						f = open("%sTo%s_ResM%d_M%dTo%d_Interference_13TeV-pythia8_cff.py"%(model,decay,mass,massBins[i],massBins[i+1]),"w")
 				f.write(fragment)
 				f.close()
+                exit()
 
 
 interference = 3 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
