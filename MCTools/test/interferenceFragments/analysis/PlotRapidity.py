@@ -1,3 +1,8 @@
+'''
+Purpose of script is to plot rapidity vs mass
+Christian Schnaible
+31 October 2018
+'''
 import ROOT as R
 import os,glob
 import Plotter
@@ -26,42 +31,21 @@ PDF = args.pdf
 PDFNAME = '_'+PDF+'_' if PDF in ['NNPDF30nlo','CT14nlo','CT10nlo'] else '_'
 
 HNAMETMP = MODEL+'To{CHAN}'+('_ResM'+args.mass if 'ZPrime' in MODEL else '')
-FULLHNAMETMP = HNAMETMP+('_Int' if 'ZPrime' in MODEL else '')+'_'+PDF
+FULLHNAMETMP1D = HNAMETMP+('_Int' if 'ZPrime' in MODEL else '')+'_'+PDF+'_rap'
+FULLHNAMETMP2D = HNAMETMP+('_Int' if 'ZPrime' in MODEL else '')+'_'+PDF+'_rap_vs_mass'
 
 LUMI = 36300.+42100.
-
-events = {
-#        '120':100000,
-#        '200':100000,
-#        '400':50000,
-#        '800':25000,
-#        '1400':25000,
-#        '2300':25000,
-#        '3500':10000,
-#        '4500':10000,
-#        '6000':10000,
-        '120':100000,
-        '200':100000,
-        '400':50000,
-        '800':25000,
-        '1400':10000,
-        '2300':10000,
-        '3500':2000,
-        '4500':2000,
-        '6000':2000,
-        }
 
 # Only generated EE files since gen-level electrons and muons are identical
 # Doesn't actually matter either since all the couplings are flavor independent
 fileNameTmp = '../submit/crab{CRAB}/crab_{MODEL}ToEE{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}*/results/{MODEL}ToEE{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}cff_1.root'
-#fileNameTmp = '../submit/crab{CRAB}/crab_{MODEL}ToMuMu{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}*/results/{MODEL}ToMuMu{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}cff_1.root'
 
 CHANNELS = ['EE','MuMu','LL']#,'GenMuMu']
 MASSBINSLOW  = ['120','200','400', '800','1400','2300','3500','4500','6000']
 MASSBINSHIGH = ['200','400','800','1400','2300','3500','4500','6000', 'Inf']
 
 
-outFile = R.TFile.Open('root/ZprimeInterferenceHists_'+MODEL+('_'+args.mass if 'ZPrime' in MODEL else '')+'_'+PDF+('_'+args.outname if args.outname else '')+'.root','recreate')
+outFile = R.TFile.Open('hists/rapidity/ZprimeRapidityHists_'+MODEL+('_'+args.mass if 'ZPrime' in MODEL else '')+'_'+PDF+('_'+args.outname if args.outname else '')+'.root','recreate')
 
 def sigma(chan):
     BB = '(abs(decay1P4.eta)<=1.2 && abs(decay2P4.eta)<=1.2)'
@@ -123,12 +107,11 @@ def eff(chan):
 
     #if 'Gen' in chan: return '1.'
     elif chan=='LL': 
-        return '({ptCut} && {inCMS})'.format(**locals())
-        #return '1.'
+        #return '({ptCut} && {inCMS})'.format(**locals())
+        return '1.'
     else: 
         print 'lol'
         exit()
-
 
 XSPDFS = ['NNPDF30nlo','CT10nlo','CT14nlo']
 XSMODELS = ['ZPrimeQ','ZPrimeB-L','ZPrimePSI','ZPrimeT3L','ZPrimeSSM','ZPrimeLR','ZPrimeR','ZPrimeY']
@@ -168,20 +151,23 @@ with open("crossSectionScalings.data") as f:
             SCALE[pdf][zp][RESMASS][low] = float(eval(line.split()[3:][m]))
 
 hists = {CHAN:{LOW:{} for LOW in MASSBINSLOW} for CHAN in CHANNELS}
-def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
+def make2DHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
         f = R.TFile(fileName)
-        hmin,hmax = 0,9000
-        binwidth = 50
-        nbins = (hmax-hmin)/binwidth
-        hists[CHAN][LOW] = R.TH1F(hname,'',nbins,hmin,hmax)
+        xmin,xmax = 0,9000
+        xbinwidth = 50
+        xnbins = (xmax-xmin)/xbinwidth
+        ymin,ymax = -6,6
+        ybinwidth = 0.1
+        ynbins = (ymax-ymin)/ybinwidth
+        hists[CHAN][LOW] = R.TH2F(hname,'',int(xnbins),xmin,xmax,int(ynbins),ymin,ymax)
         hists[CHAN][LOW].Sumw2()
         pdfTree = f.Get('pdfTree')
         # Resolution smearing
         # rndm is a random value generated between 0 and 1.. pretty convienient for smearing
         pdfTree.SetAlias('z','sin(2*pi*rndm)*sqrt(-2*log(rndm))')
-        draw = 'bosonP4.mass + {SIGMA}*z >> {HISTNAME}'.format(SIGMA=sigma(CHAN),HISTNAME=hname)
-        #NEVENTS = float(pdfTree.GetEntries())
-        NEVENTS = events[LOW]
+        pdfTree.SetAlias('rapidity','0.5*TMath::Log((bosonP4.nrgy+bosonP4.pt*TMath::SinH(bosonP4.eta))/(bosonP4.nrgy-bosonP4.pt*TMath::SinH(bosonP4.eta)))')
+        draw = 'rapidity:(bosonP4.mass + {SIGMA}*z)>>{HISTNAME}'.format(SIGMA=sigma(CHAN),HISTNAME=hname)
+        NEVENTS = float(pdfTree.GetEntries())
         if PDF=='CTEQ5L':
             XS = pdfTree.GetUserInfo().FindObject('crossSec').GetVal()
         else:
@@ -195,7 +181,7 @@ def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
         weight = '{EFF}*{XS}*{LUMI}/{NEVENTS}'.format(EFF=eff(CHAN),XS=XS,LUMI=LUMI,NEVENTS=NEVENTS)
         option = 'hist'
         #print draw,weight
-        pdfTree.Draw(draw,weight,option,NEVENTS)
+        pdfTree.Draw(draw,weight,option)
         hists[CHAN][LOW].SetDirectory(0)
         if PDF=='CTEQ5L' and MODEL!='DY':
             hists[CHAN][LOW].Scale(SCALE[PDF][MODEL][MASS][LOW])
@@ -206,18 +192,61 @@ def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
         print hname
         hists[CHAN][LOW].Write(hname)
 
+def make1DHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
+        f = R.TFile(fileName)
+        xmin,xmax = -6,6
+        xbinwidth = 0.1
+        xnbins = (xmax-xmin)/xbinwidth
+        h = R.TH1F(hname,'',int(xnbins),xmin,xmax)
+        h.Sumw2()
+        pdfTree = f.Get('pdfTree')
+        # Resolution smearing
+        # rndm is a random value generated between 0 and 1.. pretty convienient for smearing
+        pdfTree.SetAlias('rapidity','0.5*TMath::Log((bosonP4.nrgy+bosonP4.pt*TMath::SinH(bosonP4.eta))/(bosonP4.nrgy-bosonP4.pt*TMath::SinH(bosonP4.eta)))')
+        draw = 'rapidity>>{HISTNAME}'.format(HISTNAME=hname)
+        NEVENTS = float(pdfTree.GetEntries())
+        if PDF=='CTEQ5L':
+            XS = pdfTree.GetUserInfo().FindObject('crossSec').GetVal()
+        else:
+            if MODEL=='DY':
+                XS = DYXSTABLE[PDF][MODEL][MASS][LOW]['XS']
+                #XSerr = DYXSTABLE[MODEL][MASS][MASSBIN]['XSerr']
+            else:
+                XS = XSTABLE[PDF][MODEL][MASS][LOW]['XS']
+                #XSerr = XSTABLE[MODEL][MASS][MASSBIN]['XSerr']
+        print hname, XS, LUMI, NEVENTS, XS*LUMI/NEVENTS
+        weight = '{EFF}*{XS}*{LUMI}/{NEVENTS}'.format(EFF=eff(CHAN),XS=XS,LUMI=LUMI,NEVENTS=NEVENTS)
+        option = 'hist'
+        #print draw,weight
+        pdfTree.Draw(draw,weight,option)
+        h.SetDirectory(0)
+        if PDF=='CTEQ5L' and MODEL!='DY':
+            h.Scale(SCALE[PDF][MODEL][MASS][LOW])
+        elif PDF=='CTEQ5L' and MODEL=='DY' and LOW=='800':
+            h.Scale(1.07/0.94)
+        f.Close()
+        outFile.cd()
+        print hname
+        h.Write(hname)
+
 for CHAN in CHANNELS:
     hists[CHAN]['sum'] = {}
     for i,(LOW,HIGH) in enumerate(zip(MASSBINSLOW,MASSBINSHIGH)):
         #inFileName = fileNameTmp.format(**locals())
-        inFileName = glob.glob(fileNameTmp.format(**locals()))[0]
+        names = fileNameTmp.format(**locals())
+        print names
+        inFileName = glob.glob(names)[0]
         HNAME = HNAMETMP.format(**locals())+'_M'+LOW+'To'+HIGH+('_Int' if 'ZPrime' in MODEL else '')+('_'+PDF if PDF else '')
-        FULLHNAME = FULLHNAMETMP.format(**locals())
-        makeHist(HNAME,inFileName,CHAN,PDF,MODEL,MASS,LOW)
+        HNAME1D = HNAME+'_rap'
+        HNAME2D = HNAME+'_rap_vs_mass'
+        FULLHNAME2D = FULLHNAMETMP2D.format(**locals())
+        make1DHist(HNAME1D,inFileName,CHAN,PDF,MODEL,MASS,LOW)
+        make2DHist(HNAME2D,inFileName,CHAN,PDF,MODEL,MASS,LOW)
         if i==0:
-            hists[CHAN]['sum'] = hists[CHAN][LOW].Clone(FULLHNAME)
+            hists[CHAN]['sum'] = hists[CHAN][LOW].Clone(FULLHNAME2D)
         else:
             hists[CHAN]['sum'].Add(hists[CHAN][LOW])
-    print FULLHNAME
+    print FULLHNAME2D
     print hists[CHAN]['sum'].GetName()
     hists[CHAN]['sum'].Write()
+

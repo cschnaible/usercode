@@ -50,6 +50,11 @@ colors = {
         '7000':R.kGreen-3,
         '7500':R.kGreen+3,
         '8000':R.kOrange+1,
+        '9000':R.kOrange+10,
+        '10000':R.kViolet+10,
+        '11000':R.kViolet+3,
+        '12000':R.kSpring-1,
+        '13000':R.kSpring-7,
         }
 
 # ZPrimeT3LToEE_ResM6000_Int_NNPDF30nlo_NPE_5_NEVT_2520_M_600_9000_toys_batch_2016_2017_20181010.root
@@ -88,28 +93,26 @@ for CHAN in CHANNELS:
         for model in ['sb','b']:
             modelName = 'S+B' if model=='sb' else 'B'
 
+
+
             hist = R.TH1F('toyData_'+CHAN+'_'+str(t),'',int(nbins),low,high)
             toyTree.Draw('mass_'+model+'>>{hname}'.format(hname=hist.GetName()))
-            canvToyData = Plotter.Canvas(ratioFactor=1./3,lumi='Toy dataset #{t} from {modelName} hypothesis'.format(**locals()),extra='Private Work Simulation',logy=True)
             dataPlot = Plotter.Plot(hist,legName='Toy data',legType='pe',option='pe')
-            # ZPrimeT3LToEE_ResM6000_Int_NNPDF30nlo
-            # DYToEE_NNPDF30nlo
             sbHist = toyFile.Get(BASE).Clone()
-            sbHist.Scale(NEVT/tools.get_integral(sbHist,600)[0])
-            sbPlot = Plotter.Plot(sbHist,legName=pretty[MODEL]+'#rightarrow'+pretty[CHAN],legType='l',option='hist')
             bHist = toyFile.Get('DYTo'+CHAN+'_'+PDF).Clone()
-            bHist.Scale(NEVT/tools.get_integral(bHist,600)[0])
+            if model=='sb':
+                den = tools.get_integral(sbHist,600)[0]
+            else:
+                den = tools.get_integral(bHist,600)[0]
+            norm = NEVT / den
+            sbHist.Scale(norm)
+            bHist.Scale(norm)
+
+            sbPlot = Plotter.Plot(sbHist,legName=pretty[MODEL]+'#rightarrow'+pretty[CHAN],legType='l',option='hist')
             bPlot = Plotter.Plot(bHist,legName=pretty['DY']+'#rightarrow'+pretty[CHAN],legType='l',option='hist')
-            canvToyData.addMainPlot(dataPlot)
-            canvToyData.addMainPlot(sbPlot)
-            canvToyData.addMainPlot(bPlot)
-
-            sbPlot.SetLineColor(R.kOrange+1)
-            bPlot.SetLineColor(R.kBlue)
-
             toy_lr = toyTree.GetUserInfo().FindObject('lambda_'+model).GetVal()
-            fSB,pSB,zSB = tools.get_f_and_pz_values(lrHists['sb'],toy_lr)
-            fB,pB,zB = tools.get_f_and_pz_values(lrHists['b'],toy_lr)
+            fSB,pSB,zSB = tools.get_f_and_pz_values(lrHists['sb'],toy_lr,'alt')
+            fB,pB,zB = tools.get_f_and_pz_values(lrHists['b'],toy_lr,'null')
 
             sbtext = 'p_{{S+B}} = {pSB:6.3f}, Z_{{S+B}} = {zSB:5.3f}'.format(pSB=pSB,zSB=zSB)
             print sbtext
@@ -117,17 +120,38 @@ for CHAN in CHANNELS:
             print btext
             ltext = '#lambda_{{data}} = {toy_lr:6.3f}'.format(toy_lr=toy_lr)
             print ltext
-            canvToyData.drawText(sbtext,pos=(0.5,0.7),align='tl')
-            canvToyData.drawText(btext,pos=(0.5,0.65),align='tl')
-            canvToyData.drawText(ltext,pos=(0.5,0.6),align='tl')
-            canvToyData.firstPlot.setTitles(X='mass [GeV]',Y='Events / {binwidth} GeV'.format(binwidth=binwidth))
-            canvToyData.makeLegend(pos='tr')
-            canvToyData.legend.moveLegend(X=-0.1)
-            canvToyData.legend.resizeHeight()
-            canvToyData.firstPlot.GetYaxis().SetRangeUser(1E-5,3E5)
-            canvToyData.addRatioPlot(dataPlot,sbPlot,color=R.kOrange+1,ytit='Toy data / MC',xtit='mass [GeV]',option='pe')
-            canvToyData.addRatioPlot(dataPlot,bPlot,color=R.kBlue,ytit='Toy data / MC',xtit='mass [GeV]',option='pe')
-            canvToyData.cleanup('plots/'+BASE+'_'+model+'_toy_'+str(t)+'_'+(args.outname if args.outname else '')+'.pdf',mode='BOB')
+            for logy in [True,False]:
+                # False = plot toy data linear high mass
+                # True = plot toy data semilog full mass range
+                ratioFactor = 1./3 if logy else 0
+                canvToyData = Plotter.Canvas(ratioFactor=ratioFactor,logy=logy,lumi='Toy dataset #{t} from {modelName} hypothesis'.format(**locals()),extra='Private Work Simulation')
+                # ZPrimeT3LToEE_ResM6000_Int_NNPDF30nlo
+                # DYToEE_NNPDF30nlo
+                canvToyData.addMainPlot(dataPlot)
+                canvToyData.addMainPlot(sbPlot)
+                canvToyData.addMainPlot(bPlot)
+
+                sbPlot.SetLineColor(R.kOrange+1)
+                bPlot.SetLineColor(R.kBlue)
+
+                canvToyData.firstPlot.setTitles(X='mass [GeV]',Y='Events / {binwidth} GeV'.format(binwidth=binwidth))
+                canvToyData.makeLegend(pos='tr')
+                canvToyData.legend.moveLegend(X=-0.1)
+                canvToyData.legend.resizeHeight()
+                if not logy:
+                    canvToyData.firstPlot.GetYaxis().SetRangeUser(0,100)
+                    xup = float(MASS)
+                    canvToyData.firstPlot.GetXaxis().SetRangeUser(1000,xup)
+                else:
+                    canvToyData.drawText(sbtext,pos=(0.5,0.7),align='tl')
+                    canvToyData.drawText(btext,pos=(0.5,0.65),align='tl')
+                    canvToyData.drawText(ltext,pos=(0.5,0.6),align='tl')
+                    canvToyData.firstPlot.GetYaxis().SetRangeUser(1E-5,3E5)
+                    canvToyData.addRatioPlot(dataPlot,sbPlot,color=R.kOrange+1,ytit='Toy data / MC',xtit='mass [GeV]',option='pe')
+                    canvToyData.addRatioPlot(dataPlot,bPlot,color=R.kBlue,ytit='Toy data / MC',xtit='mass [GeV]',option='pe')
+                linear = '' if logy else '_linear'
+                canvToyData.cleanup('plots/'+BASE+'_'+model+linear+'_toy_'+str(t)+'_'+(args.outname if args.outname else '')+'.pdf',mode='BOB')
+
 
             # Plot full PE likelihood ratios
             tools.printStats(lrHists['sb'])

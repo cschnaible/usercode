@@ -14,13 +14,9 @@ parser.add_argument('-in','--inname',default='',type=str,help='Extra name to add
 parser.add_argument('-out','--outname',default='',type=str,help='Extra name to add to output file')
 args = parser.parse_args()
 
-PDFs = ['NNPDF30nlo','CT10nlo','CT14nlo','CTEQ5L']
 PDF = 'NNPDF30nlo'
 colors = {
         'NNPDF30nlo':R.kGreen+1,
-        'CT10nlo':R.kOrange+1,
-        'CT14nlo':R.kRed,
-        'CTEQ5L':R.kBlue,
         }
 pretty = {
         'MuMu':'#mu#mu',
@@ -34,9 +30,6 @@ pretty = {
         }
 hpdfname = {
         'NNPDF30nlo':'_NNPDF30nlo',
-        'CT10nlo':'_CT10nlo',
-        'CT14nlo':'_CT14nlo',
-        'CTEQ5L':'_CTEQ5L',
         }
 DATE = args.inname
 
@@ -71,6 +64,8 @@ powhegXS = { # in pb
         }
 def make_powheg_dist(when):
     where = '/afs/cern.ch/user/a/alfloren/public/DY_ROOT/'+when
+    ptCut = '(gen_lep_pt[0]>53 && gen_lep_pt[1]>53)'
+    etaCut = '(abs(gen_lep_eta[0])<2.4 && abs(gen_lep_eta[1])<2.4)'
     hmin,hmax = 0,9000
     binwidth = 50
     nbins = (hmax-hmin)/binwidth
@@ -82,7 +77,8 @@ def make_powheg_dist(when):
         #NEVTS = t.GetEntries()
         hists[low] = R.TH1F('powhegHist_'+when+'_'+low,'',nbins,hmin,hmax)
         hists[low].Sumw2()
-        t.Draw('gen_dil_mass>>powhegHist_{when}_{low}'.format(when=when,low=low),'{LUMI}*{XS}/{NEVTS}'.format(LUMI=36300,XS=powhegXS[when][low]['xs'],NEVTS=powhegXS[when][low]['nevts']),'goff')
+        #t.Draw('gen_dil_mass>>powhegHist_{when}_{low}'.format(when=when,low=low),'({ptCut} && {etaCut})*{LUMI}*{XS}/{NEVTS}'.format(ptCut=ptCut,etaCut=etaCut,LUMI=36300+42100,XS=powhegXS[when][low]['xs'],NEVTS=powhegXS[when][low]['nevts']),'goff')
+        t.Draw('gen_res_mass>>powhegHist_{when}_{low}'.format(when=when,low=low),'({ptCut} && {etaCut})*{LUMI}*{XS}/{NEVTS}'.format(ptCut=ptCut,etaCut=etaCut,LUMI=36300+42100,XS=powhegXS[when][low]['xs'],NEVTS=powhegXS[when][low]['nevts']),'goff')
         hists[low].SetDirectory(0)
         inFile.Close()
     powhegHist = R.TH1F('powhegHist_'+when,'',nbins,hmin,hmax)
@@ -122,10 +118,10 @@ cDY.legend.moveLegend(X=-0.2)
 cDY.legend.resizeHeight()
 cDY.setMaximum()
 cDY.mainPad.SetLogy(True)
-cDY.addRatioPlot(powhegPlot,pythiaPlot,legName='POWHEG (NNPDF3.0) / PYTHIA (NNPDF3.0)',color=R.kOrange+1,ytit='Ratio',xtit='mass [GeV]',option='le')
+cDY.addRatioPlot(powhegPlot,pythiaPlot,legName='POWHEG (NNPDF3.0) / PYTHIA (NNPDF3.0)',color=R.kOrange+1,ytit='POWHEG / PYTHIA',xtit='mass [GeV]',option='le')
 #cDY.addRatioPlot(powheg17Plot,pythiaPlot,legName='POWHEG (NNPDF3.1) / PYTHIA (NNPDF3.0)',ytit='Ratio',color=R.kGreen+1,xtit='mass [GeV]',option='le')
-cDY.makeRatioLegend(pos='tr')
-cDY.ratLegend.moveLegend(X=-0.2)
+#cDY.makeRatioLegend(pos='tr')
+#cDY.ratLegend.moveLegend(X=-0.2)
 cDY.cleanup('plots/DYToLL_generator_comparison'+('_'+args.outname if args.outname else '')+'.pdf')
 
 canvRatio = Plotter.Canvas(lumi='NNPDF3.0 (NLO) '+pretty['DY']+'#rightarrow ll',extra='Private Work Simulation')

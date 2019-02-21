@@ -433,15 +433,36 @@ CT14nlo ZPrimeB-L 6000 -1 1.227e-05 +- 2.405e-08 pb
 # PDF4LHC15nlomc ZPrimeB-L 6000 4500 1.041e-06 +- 1.832e-09 pb
 # PDF4LHC15nlomc ZPrimeB-L 6000 6000 7.829e-07 +- 1.533e-09 pb
 # PDF4LHC15nlomc ZPrimeB-L 6000 -1
-NNPDF30nlo DY -1 120 1.621e+01 +- 2.192e-02 pb
-NNPDF30nlo DY -1 200 2.345e+00 +- 3.285e-03 pb
-NNPDF30nlo DY -1 400 2.078e-01 +- 3.045e-04 pb
-NNPDF30nlo DY -1 800 1.445e-02 +- 2.185e-05 pb
-NNPDF30nlo DY -1 1400 1.176e-03 +- 1.870e-06 pb
-NNPDF30nlo DY -1 2300 7.383e-05 +- 1.171e-07 pb
-NNPDF30nlo DY -1 3500 3.306e-06 +- 5.028e-09 pb
-NNPDF30nlo DY -1 4500 3.537e-07 +- 5.634e-10 pb
-NNPDF30nlo DY -1 6000 1.572e-08 +- 0.000e+00 pb
+# 20181010 DY MC using PYTHIA data cards for SingleWeakBoson
+# NNPDF30nlo DY -1 120 1.631e+01 +- 2.200e-02 pb
+# NNPDF30nlo DY -1 200 2.345e+00 +- 3.279e-03 pb
+# NNPDF30nlo DY -1 400 2.079e-01 +- 3.046e-04 pb
+# NNPDF30nlo DY -1 800 1.442e-02 +- 2.183e-05 pb
+# NNPDF30nlo DY -1 1400 1.177e-03 +- 1.837e-06 pb
+# NNPDF30nlo DY -1 2300 7.400e-05 +- 1.155e-07 pb
+# NNPDF30nlo DY -1 3500 3.305e-06 +- 4.982e-09 pb
+# NNPDF30nlo DY -1 4500 3.547e-07 +- 5.444e-10 pb
+# NNPDF30nlo DY -1 6000 1.577e-08 +- 0.000e+00 pb
+# 20181010 DYToMuMu MC using PYTHIA data cards for Zprime with Zprime turned off
+NNPDF30nlo DY -1 120 1.629e+01 +- 2.197e-02 pb
+NNPDF30nlo DY -1 200 2.341e+00 +- 3.268e-03 pb
+NNPDF30nlo DY -1 400 2.083e-01 +- 3.056e-04 pb
+NNPDF30nlo DY -1 800 1.439e-02 +- 2.172e-05 pb
+NNPDF30nlo DY -1 1400 1.176e-03 +- 1.829e-06 pb
+NNPDF30nlo DY -1 2300 7.382e-05 +- 1.171e-07 pb
+NNPDF30nlo DY -1 3500 3.305e-06 +- 4.985e-09 pb
+NNPDF30nlo DY -1 4500 3.548e-07 +- 5.495e-10 pb
+NNPDF30nlo DY -1 6000 1.576e-08 +- 0.000e+00 pb
+# Original DY MC using PYTHIA data cards for Zprime with Zprime turned off
+# NNPDF30nlo DY -1 120 1.621e+01 +- 2.192e-02 pb
+# NNPDF30nlo DY -1 200 2.345e+00 +- 3.285e-03 pb
+# NNPDF30nlo DY -1 400 2.078e-01 +- 3.045e-04 pb
+# NNPDF30nlo DY -1 800 1.445e-02 +- 2.185e-05 pb
+# NNPDF30nlo DY -1 1400 1.176e-03 +- 1.870e-06 pb
+# NNPDF30nlo DY -1 2300 7.383e-05 +- 1.171e-07 pb
+# NNPDF30nlo DY -1 3500 3.306e-06 +- 5.028e-09 pb
+# NNPDF30nlo DY -1 4500 3.537e-07 +- 5.634e-10 pb
+# NNPDF30nlo DY -1 6000 1.572e-08 +- 0.000e+00 pb
 CT10nlo DY -1 120 1.661e+01 +- 2.242e-02 pb
 CT10nlo DY -1 200 2.381e+00 +- 3.343e-03 pb
 CT10nlo DY -1 400 2.095e-01 +- 3.073e-04 pb
@@ -640,3 +661,39 @@ NNPDF30nlo ZPrimeQ 13000 2300 5.227e-05 +- 8.418e-08 pb
 NNPDF30nlo ZPrimeQ 13000 3500 1.478e-06 +- 2.291e-09 pb
 NNPDF30nlo ZPrimeQ 13000 4500 1.015e-07 +- 1.523e-10 pb
 NNPDF30nlo ZPrimeQ 13000 6000 1.736e-08 +- 0.000e+00 pb
+CT14nlo ZPrimeQ 6000 120 1.648e+01 +- 2.317e-02 pb
+CT14nlo ZPrimeQ 6000 200 2.348e+00 +- 3.509e-03 pb
+CT14nlo ZPrimeQ 6000 400 1.977e-01 +- 3.068e-04 pb
+CT14nlo ZPrimeQ 6000 800 1.162e-02 +- 1.849e-05 pb
+CT14nlo ZPrimeQ 6000 1400 6.060e-04 +- 1.007e-06 pb
+CT14nlo ZPrimeQ 6000 2300 3.436e-05 +- 4.671e-08 pb
+CT14nlo ZPrimeQ 6000 3500 1.934e-05 +- 3.164e-08 pb
+CT14nlo ZPrimeQ 6000 4500 3.207e-05 +- 5.068e-08 pb
+CT14nlo ZPrimeQ 6000 6000 6.182e-06 +- 1.168e-08 pb
+CT14nlo ZPrimeQ 9000 120 1.653e+01 +- 2.321e-02 pb
+CT14nlo ZPrimeQ 9000 200 2.355e+00 +- 3.504e-03 pb
+CT14nlo ZPrimeQ 9000 400 2.044e-01 +- 3.149e-04 pb
+CT14nlo ZPrimeQ 9000 800 1.303e-02 +- 2.048e-05 pb
+CT14nlo ZPrimeQ 9000 1400 8.709e-04 +- 1.411e-06 pb
+CT14nlo ZPrimeQ 9000 2300 3.338e-05 +- 5.502e-08 pb
+CT14nlo ZPrimeQ 9000 3500 1.053e-06 +- 1.490e-09 pb
+CT14nlo ZPrimeQ 9000 4500 4.647e-07 +- 7.143e-10 pb
+CT14nlo ZPrimeQ 9000 6000 1.338e-07 +- 2.439e-10 pb
+CT10nlo ZPrimeQ 6000 120 1.656e+01 +- 2.327e-02 pb
+CT10nlo ZPrimeQ 6000 200 2.334e+00 +- 3.475e-03 pb
+CT10nlo ZPrimeQ 6000 400 1.959e-01 +- 3.038e-04 pb
+CT10nlo ZPrimeQ 6000 800 1.135e-02 +- 1.805e-05 pb
+CT10nlo ZPrimeQ 6000 1400 5.940e-04 +- 9.823e-07 pb
+CT10nlo ZPrimeQ 6000 2300 3.513e-05 +- 4.765e-08 pb
+CT10nlo ZPrimeQ 6000 3500 2.124e-05 +- 3.552e-08 pb
+CT10nlo ZPrimeQ 6000 4500 3.938e-05 +- 6.288e-08 pb
+CT10nlo ZPrimeQ 6000 6000 7.995e-06 +- 1.498e-08 pb
+CT10nlo ZPrimeQ 9000 120 1.651e+01 +- 2.328e-02 pb
+CT10nlo ZPrimeQ 9000 200 2.351e+00 +- 3.498e-03 pb
+CT10nlo ZPrimeQ 9000 400 2.010e-01 +- 3.095e-04 pb
+CT10nlo ZPrimeQ 9000 800 1.273e-02 +- 2.001e-05 pb
+CT10nlo ZPrimeQ 9000 1400 8.573e-04 +- 1.388e-06 pb
+CT10nlo ZPrimeQ 9000 2300 3.370e-05 +- 5.549e-08 pb
+CT10nlo ZPrimeQ 9000 3500 1.120e-06 +- 1.592e-09 pb
+CT10nlo ZPrimeQ 9000 4500 5.563e-07 +- 8.742e-10 pb
+CT10nlo ZPrimeQ 9000 6000 1.735e-07 +- 3.105e-10 pb

@@ -19,7 +19,7 @@ parser.add_argument('-m','--mass',default='6000',type=str,help='Which Z-prime ma
 args = parser.parse_args()
 
 CHANNELS = ['MuMu','EE','LL']
-PDFs = ['NNPDF30nlo','CT10nlo','CT14nlo','CTEQ5L']
+PDFs = ['NNPDF30nlo','CT10nlo','CT14nlo']#,'CTEQ5L']
 colors = {
         'NNPDF30nlo':R.kGreen+1,
         'CT10nlo':R.kOrange+1,
@@ -70,7 +70,7 @@ for CHANNEL in CHANNELS:
     cDY.mainPad.SetLogy(True)
     for PDF in PDFs:
         if PDF=='NNPDF30nlo':continue
-        cDY.addRatioPlot(dyPlots[PDF],dyPlots['NNPDF30nlo'],color=colors[PDF],legName=PDF+' / NNPDF30nlo',ytit='Ratio',xtit='mass [GeV]',option='le')
+        cDY.addRatioPlot(dyPlots[PDF],dyPlots['NNPDF30nlo'],color=colors[PDF],legName=PDF+' / NNPDF30nlo',ytit='Ratio',xtit='mass [GeV]')
     cDY.makeRatioLegend(pos='tr')
     cDY.ratLegend.moveLegend(X=-0.1)
     cDY.finishCanvas()
@@ -98,7 +98,7 @@ for CHANNEL in CHANNELS:
     cZP.mainPad.SetLogy(True)
     for PDF in PDFs:
         if PDF=='NNPDF30nlo':continue
-        cZP.addRatioPlot(zpPlots[PDF],zpPlots['NNPDF30nlo'],color=colors[PDF],legName=PDF+' / NNPDF30nlo',ytit='Ratio',xtit='mass [GeV]',option='le')
+        cZP.addRatioPlot(zpPlots[PDF],zpPlots['NNPDF30nlo'],color=colors[PDF],legName=PDF+' / NNPDF30nlo',ytit='Ratio',xtit='mass [GeV]')
     cZP.makeRatioLegend(pos='tr')
     cZP.ratLegend.moveLegend(X=-0.1)
     cZP.finishCanvas()
@@ -118,11 +118,14 @@ for CHANNEL in CHANNELS:
         dyHist.SetDirectory(0)
         dyFile.Close()
         
-        ratHist = zpHist.Clone('ratio_'+MODEL+'To'+CHANNEL+'_DY_'+PDF)
+        ratHist = zpHist.Clone(MODEL+'To'+CHANNEL+'_ResM'+MASS+'_DY_'+PDF+'_ratio')
         ratHist.Divide(dyHist)
         ratPlots[PDF] = Plotter.Plot(ratHist,legName=pretty[PDF],legType='l',option='hist')
+        #ratGraph, r, erl, ery = tools.binomial_divide(zpHist.Clone(),dyHist.Clone(),confint=clopper_pearson_poisson_means,force_lt_1=False)
+        #ratPlots[PDF] = Plotter.Plot(ratGraph,legName=pretty[PDF],legType='l',option='pe')
         cRat.addMainPlot(ratPlots[PDF])
         ratPlots[PDF].SetLineColor(colors[PDF])
+        ratPlots[PDF].SetMarkerColor(colors[PDF])
         ratPlots[PDF].SetLineWidth(1)
 
     cRat.firstPlot.setTitles(X='mass [GeV]',Y='S+B / B')
@@ -131,7 +134,7 @@ for CHANNEL in CHANNELS:
     cRat.legend.moveLegend(X=0.2)
     for PDF in PDFs:
         if PDF=='NNPDF30nlo':continue
-        cRat.addRatioPlot(ratPlots[PDF],ratPlots['NNPDF30nlo'],color=colors[PDF],legName=PDF+' / NNPDF30nlo',ytit='Ratio',xtit='mass [GeV]',option='le',plusminus=1.)
+        cRat.addRatioPlot(ratPlots[PDF],ratPlots['NNPDF30nlo'],color=colors[PDF],legName=PDF+' / NNPDF30nlo',ytit='Ratio',xtit='mass [GeV]',plusminus=1.)
     cRat.makeRatioLegend(pos='tl')
     cRat.finishCanvas()
     cRat.save('plots/Ratio_'+MODEL+'_M'+MASS+'_DY_'+CHANNEL+'_PDF'+('_'+args.outname if args.outname else '')+'.pdf')
@@ -154,5 +157,5 @@ for CHANNEL in CHANNELS:
     cComb.setMaximum()
     cComb.mainPad.SetLogy(True)
     for PDF in PDFs:
-        cComb.addRatioPlot(zpPlots[PDF],dyPlots[PDF],color=colors[PDF],ytit='S+B / B',xtit='mass [GeV]',option='le')
+        cComb.addRatioPlot(zpPlots[PDF],dyPlots[PDF],color=colors[PDF],ytit='S+B / B',xtit='mass [GeV]')
     cComb.cleanup('plots/'+MODEL+'To'+CHANNEL+'_M'+MASS+'_combined_PDF'+('_'+args.outname if args.outname else '')+'.pdf')

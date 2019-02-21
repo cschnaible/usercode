@@ -24,7 +24,8 @@ else:
 PDF = args.pdf
 DIR = 'hists/'+args.batchid+'/'
 CHANNELS = ['EE','MuMu']
-MASSES = ['4000','4500','5000','5500','6000','6500','7000','7500','8000']
+#MASSES = ['4000','4500','5000','5500','6000','6500','7000','7500','8000']
+MASSES = ['4000','4500','5000','5500','6000','6500','7000','7500','8000','9000','10000','11000','12000','13000']
 
 colors = {
         '4000':R.kRed-7,
@@ -36,6 +37,11 @@ colors = {
         '7000':R.kGreen-3,
         '7500':R.kGreen+3,
         '8000':R.kOrange+1,
+        '9000':R.kOrange+10,
+        '10000':R.kViolet+10,
+        '11000':R.kViolet+3,
+        '12000':R.kSpring-1,
+        '13000':R.kSpring-7,
         }
 def get_pretty(name):
     pretty = {
@@ -53,7 +59,8 @@ def get_pretty(name):
     else:
         return pretty[name]
 
-masses = array.array('d',[4000,4500,5000,5500,6000,6500,7000,7500,8000])
+#masses = array.array('d',[4000,4500,5000,5500,6000,6500,7000,7500,8000])
+masses = array.array('d',[4000,4500,5000,5500,6000,6500,7000,7500,8000,9000,10000,11000,12000,13000])
 # hists/batch_2016_2017_20181010/
 # ZPrimePSIToMuMu_ResM6000_Int_NNPDF30nlo_NPE_20000_NEVT_3678_M_600_9000_batch_2016_2017_20181010.root
 plotTypes = ['eventMean','eventRMS','PEMean','PERMS','pValue','zValue']

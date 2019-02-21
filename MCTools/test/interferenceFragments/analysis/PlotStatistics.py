@@ -40,6 +40,11 @@ colors = {
         '7000':R.kGreen-3,
         '7500':R.kGreen+3,
         '8000':R.kOrange+1,
+        '9000':R.kOrange+10,
+        '10000':R.kViolet+10,
+        '11000':R.kViolet+3,
+        '12000':R.kSpring-1,
+        '13000':R.kSpring-7,
         }
 pretty = {
         'MuMu':'#mu#mu',

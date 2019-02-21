@@ -57,37 +57,6 @@ def printStats(hist):
         print '{0} : {1}'.format(stat,val)
 
 
-def get_integral(hist, xlo, xhi=None, integral_only=False, include_last_bin=True, nm1=False):
-    """For the given histogram, return the integral of the bins
-    corresponding to the values xlo to xhi along with its error.
-
-    Edited to return 0 if integral is negative (for N-1 calculation 
-    to prevent negative efficeincy when events have negative weights)
-    """
-    
-    binlo = hist.FindBin(xlo)
-    if xhi is None:
-        binhi = hist.GetNbinsX()+1
-    else:
-        binhi = hist.FindBin(xhi)
-        if not include_last_bin:
-            binhi -= 1
-
-    integral = hist.Integral(binlo, binhi)
-    if integral_only:
-        if nm1 and integral < 0:
-            return 0
-        else:
-            return integral
-
-    wsq = 0
-    for i in xrange(binlo, binhi+1):
-        wsq += hist.GetBinError(i)**2
-    if nm1 and integral < 0:
-        return 0,0
-    else:
-        return integral, wsq**0.5
-
 class gaus(R.TF1):
     def __init__(self,name,N,mu,sig,lo,hi):
         #eqn ='[0]/TMath::Sqrt(2*TMath::Pi()*'+str(sig)+')*exp(-0.5*((x-'+str(mu)+')/'+str(sig)+')**2)'

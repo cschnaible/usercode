@@ -24,9 +24,9 @@ def do(cmd):
 
 if args.crab in ['status','getoutput','getlog','report','kill','remake','resubmit','purge']:
     print args.crab
-    for pdf in ['NNPDF30nlo']:#['CT10nlo','CT14nlo']:
-        for model in ['ZPrimeT3L']:
-            for mass in ['9000','10000','11000','12000','13000']:
+    for pdf in ['CT10nlo','CT14nlo']:#['NNPDF30nlo']:
+        for model in ['ZPrimeQ']:
+            for mass in ['6000','9000']:
                 dirs = glob.glob('crab_20181010/crab_%sToEE_ResM%s_*_%s_%s'%(model,mass,pdf,args.extra))
                 for d in dirs:
                     print d
@@ -57,28 +57,29 @@ if args.crab=='status-resubmit':
 
 if args.crab=='status-getoutput-getlog':
     for pdf in ['NNPDF30nlo']:#['CT10nlo','CT14nlo']:
-        for model in ['ZPrimeT3L','ZPrimeQ']:
-            for mass in ['9000','10000','11000','12000','13000']:
-                dirs = glob.glob('crab_20181010/*_%sToEE_ResM%s_*%s_%s'%(model,mass,pdf,args.extra))
-                print dirs
-                for d in dirs:
-    #                print args.crab,d
-    #                cmd = 'crab status '+d
-    #                out = Popen(cmd,shell=True,stdout=PIPE,stdin=PIPE,stderr=STDOUT)
-    #                output = out.stdout.read()
-    #                print output
-    #                lines = output.split('\n')
-                    doStuff = True
-                    #for line in lines:
-                    #    if 'Job status:' and 'finished' in line:
-                    #        doStuff = True
-                    #        break
-                    if doStuff:
-                        print '\n','-'*45,'\n'
-                        do('crab getoutput %s'%(d))
-                        print '\n','-'*45,'\n'
-                        do('crab getlog %s'%(d))
-                    print '\n','*'*45,'\n'
+        for model in ['DY']:
+            #for mass in ['6000','9000']:
+            #dirs = glob.glob('crab_20181010/*_%sToEE_ResM%s_*%s_%s'%(model,mass,pdf,args.extra))
+            dirs = glob.glob('crab_20181010/*_%sToMuMu_*%s_%s'%(model,pdf,args.extra))
+            print dirs
+            for d in dirs:
+#                print args.crab,d
+#                cmd = 'crab status '+d
+#                out = Popen(cmd,shell=True,stdout=PIPE,stdin=PIPE,stderr=STDOUT)
+#                output = out.stdout.read()
+#                print output
+#                lines = output.split('\n')
+                doStuff = True
+                #for line in lines:
+                #    if 'Job status:' and 'finished' in line:
+                #        doStuff = True
+                #        break
+                if doStuff:
+                    print '\n','-'*45,'\n'
+                    do('crab getoutput %s'%(d))
+                    print '\n','-'*45,'\n'
+                    do('crab getlog %s'%(d))
+                print '\n','*'*45,'\n'
 
 unTarLogFilesTmp = \
 '''#!/bin/bash
@@ -88,8 +89,8 @@ popd
 '''
 if args.crab=='untar-log':
     for pdf in ['NNPDF30nlo']:#['CT10nlo','CT14nlo']:
-        for model in ['ZPrimeT3L','ZPrimeQ']:
-            dirs = glob.glob('crab_20181010/*_%s*%s_%s'%(model,pdf,args.extra))
+        for model in ['DY']:
+            dirs = glob.glob('crab_20181010/*_%sToMuMu*%s_%s'%(model,pdf,args.extra))
             for d in dirs:
                 print args.crab,d
                 unTarLogFiles = unTarLogFilesTmp%(d)

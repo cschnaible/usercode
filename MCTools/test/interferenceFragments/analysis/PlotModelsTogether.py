@@ -62,6 +62,7 @@ def get_pretty(name):
 for CHANNEL in CHANNELS:
     canvas = Plotter.Canvas(extra='Private Work Simulation',ratioFactor=1./3,logy=True)
 
+    # Plot Z-primes with DY and ratio
     dyFile = R.TFile('root/ZprimeInterferenceHists_DY_'+PDF+'_'+DATE+'.root')
     dyHist = dyFile.Get('DYTo'+CHANNEL+hpdfname[PDF]).Clone()
     dyHist.SetDirectory(0)
@@ -92,3 +93,22 @@ for CHANNEL in CHANNELS:
     modellist = ''
     for MODEL in MODELS: modellist+='_'+MODEL
     canvas.cleanup('plots/ZPrimeTo'+CHANNEL+modellist+'_'+MASS+'_'+PDF+('_'+args.outname if args.outname else '')+'.pdf')
+
+    # Plot Ratios only
+    canvRat = Plotter.Canvas(extra='Private Work Simulation',lumi='')
+    ratPlots = {}
+    for MODEL in MODELS:
+        zpFile = R.TFile('root/ZprimeInterferenceHists_ZPrime'+MODEL+'_'+MASS+'_'+PDF+'_'+DATE+'.root')
+        ratHist = zpFile.Get('ZPrime'+MODEL+'To'+CHANNEL+'_ResM'+MASS+'_Int'+hpdfname[PDF]).Clone('num_'+MODEL+'_'+CHANNEL)
+        ratHist.SetDirectory(0)
+        zpFile.Close()
+        ratHist.Divide(dyHist)
+        print ratHist
+        ratPlots[MODEL] = Plotter.Plot(ratHist,legName=get_pretty('ZPrime'+MODEL),legType='l',option='hist')
+        canvRat.addMainPlot(ratPlots[MODEL])
+        ratPlots[MODEL].SetLineWidth(1)
+        ratPlots[MODEL].SetLineColor(colors[MODEL])
+    canvRat.firstPlot.setTitles(X='mass [GeV]',Y='S+B / B')
+    canvRat.makeLegend(pos='tl')
+    canvRat.firstPlot.GetYaxis().SetRangeUser(0,2)
+    canvRat.cleanup('plots/ratio_ZPrimeTo'+CHANNEL+modellist+'_'+MASS+'_'+PDF+('_'+args.outname if args.outname else '')+'.pdf')

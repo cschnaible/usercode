@@ -26,29 +26,20 @@ PDF = args.pdf
 PDFNAME = '_'+PDF+'_' if PDF in ['NNPDF30nlo','CT14nlo','CT10nlo'] else '_'
 
 HNAMETMP = MODEL+'To{CHAN}'+('_ResM'+args.mass if 'ZPrime' in MODEL else '')
-FULLHNAMETMP = HNAMETMP+('_Int' if 'ZPrime' in MODEL else '')+'_'+PDF
+FULLHNAMETMP = HNAMETMP+('_Int' if 'ZPrime' in MODEL else '')+'_'+PDF+'_{CAT}'
 
 LUMI = 36300.+42100.
 
 events = {
-#        '120':100000,
-#        '200':100000,
-#        '400':50000,
-#        '800':25000,
-#        '1400':25000,
-#        '2300':25000,
-#        '3500':10000,
-#        '4500':10000,
-#        '6000':10000,
         '120':100000,
         '200':100000,
         '400':50000,
         '800':25000,
-        '1400':10000,
-        '2300':10000,
-        '3500':2000,
-        '4500':2000,
-        '6000':2000,
+        '1400':25000,
+        '2300':25000,
+        '3500':10000,
+        '4500':10000,
+        '6000':10000,
         }
 
 # Only generated EE files since gen-level electrons and muons are identical
@@ -129,6 +120,21 @@ def eff(chan):
         print 'lol'
         exit()
 
+def category(cat):
+    if cat=='bb':
+        return '(abs(decay1P4.eta)<=1.2 && abs(decay2P4.eta)<=1.2)'
+    elif cat=='be':
+        return '(abs(decay1P4.eta)>1.2 || abs(decay2P4.eta)>1.2)'
+    elif cat=='beee':
+        return '((abs(decay1P4.eta)>1.2 && abs(decay2P4.eta)<=1.2) || (abs(decay1P4.eta)<=1.2 && abs(decay2P4.eta)>1.2))'
+    elif cat=='ee':
+        return '(abs(decay1P4.eta)>1.2 && abs(decay2P4.eta)>1.2)'
+    elif cat=='all':
+        return '(1)'
+    else:
+        print 'lol'
+        exit()
+
 
 XSPDFS = ['NNPDF30nlo','CT10nlo','CT14nlo']
 XSMODELS = ['ZPrimeQ','ZPrimeB-L','ZPrimePSI','ZPrimeT3L','ZPrimeSSM','ZPrimeLR','ZPrimeR','ZPrimeY']
@@ -167,14 +173,14 @@ with open("crossSectionScalings.data") as f:
         for m,low in enumerate(MASSBINSLOW):
             SCALE[pdf][zp][RESMASS][low] = float(eval(line.split()[3:][m]))
 
-hists = {CHAN:{LOW:{} for LOW in MASSBINSLOW} for CHAN in CHANNELS}
-def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
+hists = {CHAN:{LOW:{CAT:{} for CAT in ['all','bb','be','beee','ee']} for LOW in MASSBINSLOW} for CHAN in CHANNELS}
+def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW,CAT):
         f = R.TFile(fileName)
         hmin,hmax = 0,9000
         binwidth = 50
         nbins = (hmax-hmin)/binwidth
-        hists[CHAN][LOW] = R.TH1F(hname,'',nbins,hmin,hmax)
-        hists[CHAN][LOW].Sumw2()
+        hists[CHAN][LOW][CAT] = R.TH1F(hname,'',nbins,hmin,hmax)
+        hists[CHAN][LOW][CAT].Sumw2()
         pdfTree = f.Get('pdfTree')
         # Resolution smearing
         # rndm is a random value generated between 0 and 1.. pretty convienient for smearing
@@ -192,32 +198,34 @@ def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
                 XS = XSTABLE[PDF][MODEL][MASS][LOW]['XS']
                 #XSerr = XSTABLE[MODEL][MASS][MASSBIN]['XSerr']
         print hname, XS, LUMI, NEVENTS, XS*LUMI/NEVENTS
-        weight = '{EFF}*{XS}*{LUMI}/{NEVENTS}'.format(EFF=eff(CHAN),XS=XS,LUMI=LUMI,NEVENTS=NEVENTS)
+        weight = '{CAT}*{EFF}*{XS}*{LUMI}/{NEVENTS}'.format(CAT=category(CAT),EFF=eff(CHAN),XS=XS,LUMI=LUMI,NEVENTS=NEVENTS)
         option = 'hist'
         #print draw,weight
         pdfTree.Draw(draw,weight,option,NEVENTS)
-        hists[CHAN][LOW].SetDirectory(0)
+        hists[CHAN][LOW][CAT].SetDirectory(0)
         if PDF=='CTEQ5L' and MODEL!='DY':
-            hists[CHAN][LOW].Scale(SCALE[PDF][MODEL][MASS][LOW])
+            hists[CHAN][LOW][CAT].Scale(SCALE[PDF][MODEL][MASS][LOW])
         elif PDF=='CTEQ5L' and MODEL=='DY' and LOW=='800':
-            hists[CHAN][LOW].Scale(1.07/0.94)
+            hists[CHAN][LOW][CAT].Scale(1.07/0.94)
         f.Close()
         outFile.cd()
         print hname
-        hists[CHAN][LOW].Write(hname)
+        hists[CHAN][LOW][CAT].Write(hname)
 
 for CHAN in CHANNELS:
     hists[CHAN]['sum'] = {}
-    for i,(LOW,HIGH) in enumerate(zip(MASSBINSLOW,MASSBINSHIGH)):
-        #inFileName = fileNameTmp.format(**locals())
-        inFileName = glob.glob(fileNameTmp.format(**locals()))[0]
-        HNAME = HNAMETMP.format(**locals())+'_M'+LOW+'To'+HIGH+('_Int' if 'ZPrime' in MODEL else '')+('_'+PDF if PDF else '')
-        FULLHNAME = FULLHNAMETMP.format(**locals())
-        makeHist(HNAME,inFileName,CHAN,PDF,MODEL,MASS,LOW)
-        if i==0:
-            hists[CHAN]['sum'] = hists[CHAN][LOW].Clone(FULLHNAME)
-        else:
-            hists[CHAN]['sum'].Add(hists[CHAN][LOW])
-    print FULLHNAME
-    print hists[CHAN]['sum'].GetName()
-    hists[CHAN]['sum'].Write()
+    for CAT in ['all','bb','be','beee','ee']:
+        hists[CHAN]['sum'][CAT] = {}
+        for i,(LOW,HIGH) in enumerate(zip(MASSBINSLOW,MASSBINSHIGH)):
+            #inFileName = fileNameTmp.format(**locals())
+            inFileName = glob.glob(fileNameTmp.format(**locals()))[0]
+            HNAME = HNAMETMP.format(**locals())+'_M'+LOW+'To'+HIGH+('_Int' if 'ZPrime' in MODEL else '')+('_'+PDF if PDF else '')+'_'+CAT
+            FULLHNAME = FULLHNAMETMP.format(**locals())
+            makeHist(HNAME,inFileName,CHAN,PDF,MODEL,MASS,LOW,CAT)
+            if i==0:
+                hists[CHAN]['sum'][CAT] = hists[CHAN][LOW][CAT].Clone(FULLHNAME)
+            else:
+                hists[CHAN]['sum'][CAT].Add(hists[CHAN][LOW][CAT])
+        print FULLHNAME
+        print hists[CHAN]['sum'][CAT].GetName()
+        hists[CHAN]['sum'][CAT].Write()

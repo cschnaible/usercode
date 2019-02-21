@@ -27,26 +27,24 @@ config.Site.storageSite = "T2_CH_CERN"
 
 # ZPrimeLRToMuMu_ResM7500_M400To800_Interference
 
-#masses = [1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
-#masses = [4000,4500,5000,5500,6000,6500,7000,7500,8000]
-#masses = [6000]
-masses = [6000,9000]
+masses = [9000]
 
 massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
-#massBins = [4500,6000,-1]
 
 #models = ['ZPrimeQ','ZPrimeSSM','ZPrimePSI','ZPrimeN','ZPrimeSQ','ZPrimeI','ZPrimeEta','ZPrimeChi','ZPrimeR','ZPrimeB-L','ZPrimeLR','ZPrimeY','ZPrimeT3L']
-#models = ['ZPrimeQ','ZPrimeSSM','ZPrimeSQ','ZPrimeR','ZPrimeB-L','ZPrimeLR','ZPrimeY','ZPrimeT3L']
-#models = ['ZPrimeR','ZPrimeLR','ZPrimeY']
-models = ['DY']
-#models = ['ZPrimeQ','ZPrimeSSM','ZPrimeT3L','ZPrimePSI','ZPrimeB-L']
+models = ['ZprimeQ','DY']
 
-#decays = {'EE':11}
 #decays = {'EE':11,'MuMu':13}
 decays = {'MuMu':13}
-#pdfs = ['CT10nlo','CT14nlo']
-pdfs = ['NNPDF30nlo']#
-dateString = '20181105'
+pdfs = ['NNPDF31nlo_TuneCP3','NNPDF31nnlo_PR_TuneCP5']
+dateString = '20190220'
+fragmentDir = 'fragments_nnpdf31'
+
+def makeFragment(fragmentDir,fragmentName):
+    fragment_txt = open(fragmentDir+'/'+fragmentName).read()
+    fragment = open(fragmentName,'w')
+    fragment.write(fragment_txt)
+    fragment.close()
 
 for pdftouse in pdfs:
 	for mass in masses:
@@ -54,13 +52,14 @@ for pdftouse in pdfs:
 			for model in models:
 				for decay, decayN in decays.iteritems():
 					if massBins[i+1] == -1:
-						requestName = '%sTo%s_ResM%d_M%dToInf_Interference_13TeV-pythia8_%s'%(model,decay,mass,massBins[i],pdftouse)
-						fragmentName = '%sTo%s_ResM%d_M%dToInf_Interference_13TeV-pythia8_%s_cff.py'%(model,decay,mass,massBins[i],pdftouse)
-						outName = '%sTo%s_ResM%d_M%dToInf_Interference_13TeV-pythia8_forCRAB_%s_cff.py'%(model,decay,mass,massBins[i],pdftouse)
+						requestName = '%sTo%s_M%d_M-%dToInf_%s_Interference_13TeV-pythia8'%(model,decay,mass,massBins[i],pdftouse)
+						fragmentName = '%sTo%s_M%d_M-%dToInf_%s_Interference_13TeV-pythia8_cff.py'%(model,decay,mass,massBins[i],pdftouse)
+						outName = '%sTo%s_M%d_M-%dToInf_%s_Interference_13TeV-pythia8_forCRAB_cff.py'%(model,decay,mass,massBins[i],pdftouse)
 					else:
-						requestName = '%sTo%s_ResM%d_M%dTo%d_Interference_13TeV-pythia8_%s'%(model,decay,mass,massBins[i],massBins[i+1],pdftouse)
-						fragmentName = '%sTo%s_ResM%d_M%dTo%d_Interference_13TeV-pythia8_%s_cff.py'%(model,decay,mass,massBins[i],massBins[i+1],pdftouse)
-						outName = '%sTo%s_ResM%d_M%dTo%d_Interference_13TeV-pythia8_forCRAB_%s_cff.py'%(model,decay,mass,massBins[i],massBins[i+1],pdftouse)
+						requestName = '%sTo%s_M%d_M-%dTo%d_%s_Interference_13TeV-pythia8'%(model,decay,mass,massBins[i],massBins[i+1],pdftouse)
+						fragmentName = '%sTo%s_M%d_M-%dTo%d_%s_Interference_13TeV-pythia8_cff.py'%(model,decay,mass,massBins[i],massBins[i+1],pdftouse)
+						outName = '%sTo%s_M%d_M-%dTo%d_%s_Interference_13TeV-pythia8_forCRAB_cff.py'%(model,decay,mass,massBins[i],massBins[i+1],pdftouse)
+					makeFragment(fragmentDir,fragmentName)
 					with open('%s'%outName, 'w') as outfile:
 						subprocess.call(['python','runFragment.py','fragment=%s'%fragmentName,'decay=%s'%decayN],stdout=outfile)	
 
@@ -72,7 +71,9 @@ for pdftouse in pdfs:
 					print requestName
 					print outName
 					print
-					subprocess.call(['crab','submit','crabCfg.py'])
+					#subprocess.call(['crab','submit','crabCfg.py'])
+                    #os.system('rm '+fragmentName+' crabCfg.py '+outName)
+					exit()
 
 for pdftouse in pdfs:
 	for mass in masses:

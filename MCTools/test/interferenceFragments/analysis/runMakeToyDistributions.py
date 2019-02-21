@@ -16,7 +16,7 @@ if __name__=='__main__':
     PDFS=['NNPDF30nlo']#['CTEQ5L']#['CT14nlo','CT10nlo']
 
     outDir = baseDir+'/hists/'+extra
-    inputDateString = '20181026'
+    inputDateString = '20181010'
 
     os.system('mkdir -p '+baseDir+'/sh')
     os.system('mkdir -p '+outDir)
@@ -32,9 +32,9 @@ if __name__=='__main__':
     # GLR : R, B-L, LR, Y
     # GSM : T3L, SSM, Q
     models = ['T3L','Q']
-    #masses = ['4000','4500','5000','5500','6000','6500','7000','7500','8000']
+    masses = ['4000','4500','5000','5500','6000','6500','7000','7500','8000']
     #masses = ['6000','7000','8000']
-    masses = ['9000','10000','11000','12000','13000']
+    #masses = ['9000','10000','11000','12000','13000']
     channels = ['MuMu','EE']
 
 

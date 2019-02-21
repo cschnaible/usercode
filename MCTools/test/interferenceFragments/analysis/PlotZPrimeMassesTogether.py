@@ -50,11 +50,16 @@ pretty = {
         'CTEQ5L':'CTEQ 5L (LO)',
         }
 
+#massList = ['6000','7000','8000','9000','10000','11000','12000','13000']
+#massList = ['6000','9000','10000','11000']
+massList = ['6000','9000','12000']
+
 for CHANNEL in CHANNELS:
     canvas = Plotter.Canvas(lumi='Z\'_{'+MODEL+'}#rightarrow'+pretty[CHANNEL],logy=True,extra='Private Work Simulation',ratioFactor=1./3)
 
     dyFile = R.TFile('root/ZprimeInterferenceHists_DY_'+PDF+'_'+DATE+'.root')
     dyHist = dyFile.Get('DYTo'+CHANNEL+hpdfname[PDF]).Clone()
+    dyHist.Rebin(3)
     dyHist.SetDirectory(0)
     dyFile.Close()
     dyPlot = Plotter.Plot(dyHist,legName='Drell-Yan',legType='l',option='hist')
@@ -64,11 +69,13 @@ for CHANNEL in CHANNELS:
     masses = []
     for zpFileName in fileList:
         mass = zpFileName.split('/')[1].split('.')[0].split('_')[2]
+        if mass not in massList: continue
         masses.append(mass)
         #zpFile = R.TFile('root/ZprimeInterferenceHists_ZPrime'+MODEL+'_'+str(mass)+'_'+PDF+'_'+DATE+'.root')
         zpFile = R.TFile(zpFileName)
         # ZPrimeLRToEE_ResM6000_Int_NNPDF30nlo
         zpHist = zpFile.Get('ZPrime'+MODEL+'To'+CHANNEL+'_ResM'+str(mass)+'_Int'+hpdfname[PDF]).Clone()
+        zpHist.Rebin(3)
         zpHist.SetDirectory(0)
         zpFile.Close()
         zpPlots[mass] = Plotter.Plot(zpHist,legName=str(mass)+' TeV',legType='l',option='hist')
@@ -79,7 +86,9 @@ for CHANNEL in CHANNELS:
     for mass in masses: 
         zpPlots[mass].SetLineColor(colors[mass])
         zpPlots[mass].SetLineWidth(1)
-    canvas.firstPlot.setTitles(X='mass [GeV]',Y='Events / 50 GeV')
+    #canvas.firstPlot.setTitles(X='mass [GeV]',Y='Events / 50 GeV')
+    #canvas.firstPlot.setTitles(X='mass [GeV]',Y='Events / 100 GeV')
+    canvas.firstPlot.setTitles(X='mass [GeV]',Y='Events / 150 GeV')
 
     if args.data:
         datahist = R.TH1F('data','',180,0,9000)
