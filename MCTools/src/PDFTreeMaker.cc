@@ -131,6 +131,8 @@ PDFTreeMaker::PDFTreeMaker(const edm::ParameterSet& para)
   pdfWeightsTag_=para.getParameter<edm::InputTag>("pdfWeightsTag");
   datasetCode_=para.getParameter<int>("datasetCode");
   decayParticlePID_ = para.getParameter<int>("decayParticlePID");
+  consumes<reco::GenParticleCollection>(genPartsTag_);
+  consumes<GenEventInfoProduct>(genEvtInfoTag_);
   
 }
 
@@ -251,11 +253,13 @@ void PDFTreeMaker::endJob()
 
 void PDFTreeMaker::endRun(edm::Run const& iRun, edm::EventSetup const&)
 {
+    /*
   edm::Handle< GenRunInfoProduct > genInfoProduct;
   iRun.getByLabel("generator", genInfoProduct );
   TParameter<float>* crossSec=new TParameter<float>("crossSec",0);
   crossSec->SetVal(genInfoProduct->internalXSec().value());  
   tree_->GetUserInfo()->Add(crossSec);
+  */
   
 }
 

@@ -1,24 +1,47 @@
 import math
 
-tune = 'cp5'
-
-
+#masses = [6000,9000,12000]
+masses = [7500]
+massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
+#models = ['ZprimeQ','ZprimeSSM','ZprimePSI','ZprimeN','ZprimeSQ','ZprimeI','ZprimeEta','ZprimeChi','DY','ZprimeR','ZprimeB-L','ZprimeLR','ZprimeY','ZprimeT3L']
+#models = ['DY','ZprimeQ']
+models = ['ZprimeQ']
+#decays = {'EE':11,'MuMu':13}
+decays = {'MuMu':13,'EE':11}
+#savedir = 'fragments_nnpdf31'
+savedir = 'fragments'
+tunestouse = ['cuetp8m1']
 tuneInfo = {
         'cp5':{
             'tune_import':'from Configuration.Generator.MCTunes2017.PythiaCP5Settings_cfi import *',
             'tune_settings_block':'pythia8CP5SettingsBlock',
             'tune_settings':'pythia8CP5Settings',
             'tune_pdf':'NNPDF31_nnlo_as_0118_mc',
-            'tune_name':'NNPDF31nnlo_PR_TuneCP5',
+            'tune_name':'NNPDF31NNLO_PR_TuneCP5',
             },
         'cp3':{ 
             'tune_import':'from Configuration.Generator.MCTunes2017.PythiaCP3Settings_cfi import *',
             'tune_settings_block':'pythia8CP3SettingsBlock',
             'tune_settings':'pythia8CP3Settings',
             'tune_pdf':'NNPDF31_nlo_as_0118',
-            'tune_name':'NNPDF31nlo_TuneCP3',
+            'tune_name':'NNPDF31NLO_TuneCP3',
+            },
+        'cuetp8m1':{ 
+            'tune_import':'from Configuration.Generator.Pythia8CUEP8M1Settings_cfi import *',
+            'tune_settings_block':'pythia8CUEP8M1SettingsBlock',
+            'tune_settings':'pythia8CUEP8M1Settings',
+            'tune_pdf':'NNPDF30_nlo_as_0118',
+            'tune_name':'NNPDF30NLO_TuneCUETP8M1',
             },
         }
+PDFSETS = {
+        'NNPDF30NLO':'NNPDF30_nlo_as_0118',
+        'NNPDF31NLO':'NNPDF31_nlo_as_0118',
+        'PDF4LHC15NLOMC':'PDF4LHC15_nlo_mc',
+        'CT10NLO':'CT10nlo',
+        'CT14NLO':'CT14nlo',
+        }
+
 
 template = '''
 import FWCore.ParameterSet.Config as cms
@@ -35,7 +58,7 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
         pythiaPylistVerbosity = cms.untracked.int32(1),
         PythiaParameters = cms.PSet(
 	        pythia8CommonSettingsBlock,
-            tune_settings_block,
+            %(tune_settings_block)s,
             pythia8PSweightsSettingsBlock,
             processParameters = cms.vstring(
                         'NewGaugeBoson:ffbar2gmZZPrime = on',
@@ -239,13 +262,6 @@ def setZPrimeParams(model):
 	    result["nuA"] = cVcA_LR(-0.5)
 	    
 	return result
-PDFSETS = {
-        'NNPDF30NLO':'NNPDF30_nlo_as_0118',
-        'NNPDF31NLO':'NNPDF31_nlo_as_0118',
-        'PDF4LHC15NLOMC':'PDF4LHC15_nlo_mc',
-        'CT10NLO':'CT10nlo',
-        'CT14NLO':'CT14nlo',
-        }
 
 # option 0 : full gamma^*/Z^0/Z'^0 structure, with interference included. 
 # option 1 : only pure gamma^* contribution. 
@@ -256,16 +272,8 @@ PDFSETS = {
 # option 6 : only the Z^0/Z'^0 contribution, including interference. 
 interference = 0 # turns on interference, set to 3 for Z' only and 4 for Z/gamma Drell-Yan
 
-masses = [9000]#[6000,9000,12000]
-massBins = [120,200,400,800,1400,2300,3500,4500,6000,-1]
-#models = ['ZprimeQ','ZprimeSSM','ZprimePSI','ZprimeN','ZprimeSQ','ZprimeI','ZprimeEta','ZprimeChi','DY','ZprimeR','ZprimeB-L','ZprimeLR','ZprimeY','ZprimeT3L']
-models = ['DY','ZprimeQ']
-#decays = {'EE':11,'MuMu':13}
-decays = {'MuMu':13}
-savedir = 'fragments_nnpdf31'
-
 # Zprime+DY interference and DY-only fragments
-for tune in tuneInfo:
+for tune in tunestouse:
     pdftouse = tuneInfo[tune]['tune_name']
     for mass in masses:
         for i in range(0,len(massBins)-1):
@@ -298,6 +306,7 @@ for tune in tuneInfo:
                     f.write(fragment)
                     f.close()
 
+exit()
 # Zprime only fragments
 for tune in tuneInfo:
     pdftouse = tuneInfo[tune]['tune_name']

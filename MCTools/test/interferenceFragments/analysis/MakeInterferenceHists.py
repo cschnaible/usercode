@@ -7,63 +7,100 @@ parser = argparse.ArgumentParser(description='Options for plotting mass distribu
 parser.add_argument('-out','--outname',default='',type=str,help='Extra name to add to output')
 parser.add_argument('-id','--indate',default='20181004',type=str,help='Date string for when MC was generated')
 parser.add_argument('-c','--crab',default='',type=str,help='Date string for CRAB project directory')
-parser.add_argument('-model','--model',default='ZPrimeB-L',type=str,help='Z\' or DY sample, e.g. ZPrimeB-L, ZPrimePSI, or DY')
+parser.add_argument('-model','--model',default='B-L',type=str,help='Z\' or DY sample, e.g. ZPrimeB-L, ZPrimePSI, or DY')
 parser.add_argument('-mass','--mass',default='6000',type=str,help='Resonance mass for Z\' sample')
 parser.add_argument('-pdf','--pdf',default='NNPDF30nlo',type=str,help='Loop on PDF sets')
+parser.add_argument('--fewerEvents',action='store_true',help='Reduce number of events')
 args = parser.parse_args()
 
-if args.indate not in ['20180827','20181001','20181004','20181009','20181010','']:
+if args.indate not in ['20180827','20181001','20181004','20181009','20181010','','20190227']:
     print '{DATE} not a correct date string'.format(DATE=args.indate)
 
 OUTNAME = args.outname
 DATE = args.indate
 CRAB = '_'+args.crab if args.crab else ''
-MODEL = args.model
-MASS = args.mass if 'ZPrime' in MODEL else '-1'
-MASSNAME = '_ResM'+MASS if 'ZPrime' in MODEL else ''
-INT = '_Interference' if 'ZPrime' in MODEL else ''
-PDF = args.pdf
-PDFNAME = '_'+PDF+'_' if PDF in ['NNPDF30nlo','CT14nlo','CT10nlo'] else '_'
 
-HNAMETMP = MODEL+'To{CHAN}'+('_ResM'+args.mass if 'ZPrime' in MODEL else '')
+PDF = args.pdf
+
+if 'NNPDF31' in PDF:
+    # Z'Q NNPDF31 files follow this one
+    MODEL = 'ZPrime'+args.model if args.model!='DY' else args.model
+    CMODEL = 'Zprime'+args.model if args.model!='DY' else args.model
+else:
+    # All other files follow these ones
+    MODEL = 'ZPrime'+args.model if args.model!='DY' else args.model
+    CMODEL = 'ZPrime'+args.model if args.model!='DY' else args.model
+
+DIR = '/afs/cern.ch/work/c/cschnaib/Zprime2muAnalysis/ZPrimeInterference'
+INT = '_Interference' if 'ZPrime' in MODEL else ''
+
+if '31' in PDF:
+    # Z'Q NNPDF31 files follow this one
+    MASS = args.mass if 'ZPrime' in MODEL else '-1'
+    MASSNAME = '_M'+MASS if 'ZPrime' in MODEL else '' # NNPDF31 files follow this one
+    PDFNAME = '_'+PDF if PDF in ['NNPDF31nlo_TuneCP3','NNPDF31nnlo_PR_TuneCP5'] else '_'
+    fileNameTmp = '../submit/crab{CRAB}/crab_{CMODEL}ToMuMu{MASSNAME}_M-{LOW}To{HIGH}{PDFNAME}{INT}_13TeV-pythia8_{DATE}/results/{CMODEL}ToMuMu{MASSNAME}_M-{LOW}To{HIGH}{PDFNAME}{INT}_13TeV-pythia8_cff_1.root'
+else:
+    # All other files follow these ones
+    # Only generated EE files since gen-level electrons and muons are identical
+    # Doesn't actually matter either since all the couplings are flavor independent
+    MASS = args.mass if 'ZPrime' in MODEL else '-1'
+    MASSNAME = '_ResM'+MASS if 'ZPrime' in MODEL else '' 
+    PDFNAME = '_'+PDF+'_' if PDF in ['NNPDF30nlo','CT14nlo','CT10nlo'] else '_'
+    fileNameTmp = DIR+'/crab{CRAB}/crab_{MODEL}ToEE{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}*/results/{MODEL}ToEE{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}cff_1.root'
+    #fileNameTmp = '../submit/crab{CRAB}/crab_{MODEL}ToMuMu{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}*/results/{MODEL}ToMuMu{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}cff_1.root'
+
+HNAMETMP = MODEL+'To{CHAN}'+('_M'+args.mass if 'ZPrime' in MODEL else '')
 FULLHNAMETMP = HNAMETMP+('_Int' if 'ZPrime' in MODEL else '')+'_'+PDF
 
 LUMI = 36300.+42100.
 
 events = {
-#        '120':100000,
-#        '200':100000,
-#        '400':50000,
-#        '800':25000,
-#        '1400':25000,
-#        '2300':25000,
-#        '3500':10000,
-#        '4500':10000,
-#        '6000':10000,
         '120':100000,
         '200':100000,
         '400':50000,
         '800':25000,
-        '1400':10000,
-        '2300':10000,
-        '3500':2000,
-        '4500':2000,
-        '6000':2000,
+        '1400':25000,
+        '2300':25000,
+        '3500':10000,
+        '4500':10000,
+        '6000':10000,
+#        '120':100000,
+#        '200':100000,
+#        '400':50000,
+#        '800':25000,
+#        '1400':10000,
+#        '2300':10000,
+#        '3500':2000,
+#        '4500':2000,
+#        '6000':2000,
         }
 
-# Only generated EE files since gen-level electrons and muons are identical
-# Doesn't actually matter either since all the couplings are flavor independent
-fileNameTmp = '../submit/crab{CRAB}/crab_{MODEL}ToEE{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}*/results/{MODEL}ToEE{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}cff_1.root'
-#fileNameTmp = '../submit/crab{CRAB}/crab_{MODEL}ToMuMu{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}*/results/{MODEL}ToMuMu{MASSNAME}_M{LOW}To{HIGH}{INT}_13TeV-pythia8{PDFNAME}cff_1.root'
+qmap = {
+        'mass':'bosonP4.mass',
+        'rapidity':'0.5*TMath::Log((bosonP4.nrgy+bosonP4.pt*TMath::SinH(bosonP4.eta))/(bosonP4.nrgy-bosonP4.pt*TMath::SinH(bosonP4.eta)))',
+        'bosonPz':'abs(bosonP4.pt*TMath::SinH(bosonP4.eta))',
+        }
 
+cuts = {
+        'low':'(bosonP4.mass < 2000)',
+        'mid':'(bosonP4.mass >= 2000 && bosonP4.mass < 5000)',
+        'high':'(bosonP4.mass >= 5000)',
+        'all':'(1.)',
+        }
+
+CUTS = ['low','mid','high','all']
+QUANTITIES = ['rapidity','mass','bosonPz']
 CHANNELS = ['EE','MuMu','LL']#,'GenMuMu']
 MASSBINSLOW  = ['120','200','400', '800','1400','2300','3500','4500','6000']
 MASSBINSHIGH = ['200','400','800','1400','2300','3500','4500','6000', 'Inf']
-
+hists = {CHAN:{LOW:{} for LOW in MASSBINSLOW} for CHAN in CHANNELS}
 
 outFile = R.TFile.Open('root/ZprimeInterferenceHists_'+MODEL+('_'+args.mass if 'ZPrime' in MODEL else '')+'_'+PDF+('_'+args.outname if args.outname else '')+'.root','recreate')
 
-def sigma(chan):
+def sigma(chan,quantity):
+    # Only smear mass distributions
+    if quantity!='mass': return 0.
     BB = '(abs(decay1P4.eta)<=1.2 && abs(decay2P4.eta)<=1.2)'
     BE = '(abs(decay1P4.eta)>1.2 || abs(decay2P4.eta)>1.2)'
     BEee = '((abs(decay1P4.eta)>1.2 && abs(decay2P4.eta)<=1.2) || (abs(decay1P4.eta)<=1.2 && abs(decay2P4.eta)>1.2))'
@@ -93,13 +130,14 @@ def sigma(chan):
         print 'lol'
         exit()
 
-def eff(chan):
+def eff(chan,quantity):
     BB = '(abs(decay1P4.eta)<=1.2 && abs(decay2P4.eta)<=1.2)'
     BE = '(abs(decay1P4.eta)>1.2 || abs(decay2P4.eta)>1.2)'
     BEee = '((abs(decay1P4.eta)>1.2 && abs(decay2P4.eta)<=1.2) || (abs(decay1P4.eta)<=1.2 && abs(decay2P4.eta)>1.2))'
     EEee = '(abs(decay1P4.eta)>1.2 && abs(decay2P4.eta)>1.2)'
     inCMS = '(abs(decay1P4.eta)<2.4 && abs(decay2P4.eta)<2.4)'
     ptCut = '(decay1P4.pt>53 && decay1P4.pt>53)'
+    if quantity!='mass': return '({ptCut} && {inCMS})'.format(**locals())
     if chan=='EE':
         ee_eff_bb = '(0.6484-500.3/(bosonP4.mass+362.3)+6.863e4/(pow(bosonP4.mass,2)+1.209e5))'
         ee_eff_be = '(-0.03434+739/(bosonP4.mass+1260.)-9.172e4/(pow(bosonP4.mass,2)+7.39e4)+1.412e7/(pow(bosonP4.mass,3)+2.185e7))'
@@ -130,8 +168,8 @@ def eff(chan):
         exit()
 
 
-XSPDFS = ['NNPDF30nlo','CT10nlo','CT14nlo']
-XSMODELS = ['ZPrimeQ','ZPrimeB-L','ZPrimePSI','ZPrimeT3L','ZPrimeSSM','ZPrimeLR','ZPrimeR','ZPrimeY']
+XSPDFS = ['NNPDF30nlo','CT10nlo','CT14nlo','NNPDF31nlo_TuneCP3','NNPDF31nnlo_PR_TuneCP5']
+XSMODELS = ['ZprimeQ','ZPrimeQ','ZPrimeB-L','ZPrimePSI','ZPrimeT3L','ZPrimeSSM','ZPrimeLR','ZPrimeR','ZPrimeY']
 RESMASSES = ['4000','4500','5000','5500','6000','6500','7000','7500','8000','9000','10000','11000','12000','13000']
 XSTABLE = {pdf:{zp:{resmass:{massbin:{'XS':{},'XSerr':{}} for massbin in ['-1']+MASSBINSLOW} for resmass in RESMASSES} for zp in XSMODELS} for pdf in XSPDFS}
 DYXSTABLE = {pdf:{'DY':{'-1':{massbin:{'XS':{},'XSerr':{}} for massbin in MASSBINSLOW}}} for pdf in XSPDFS}
@@ -167,21 +205,37 @@ with open("crossSectionScalings.data") as f:
         for m,low in enumerate(MASSBINSLOW):
             SCALE[pdf][zp][RESMASS][low] = float(eval(line.split()[3:][m]))
 
-hists = {CHAN:{LOW:{} for LOW in MASSBINSLOW} for CHAN in CHANNELS}
-def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
-        f = R.TFile(fileName)
+def histinfo(quantity):
+    if quantity=='mass':
         hmin,hmax = 0,9000
         binwidth = 50
         nbins = (hmax-hmin)/binwidth
-        hists[CHAN][LOW] = R.TH1F(hname,'',nbins,hmin,hmax)
+    elif quantity=='rapidity':
+        hmin,hmax = -6,6
+        binwidth = 0.1
+        nbins = (hmax-hmin)/binwidth
+    elif quantity=='bosonPz':
+        hmin,hmax = 0,5000
+        binwidth = 100
+        nbins = (hmax-hmin)/binwidth
+    else:
+        print quantity,'not a valid quantity!'
+        exit()
+    return nbins,hmin,hmax
+
+# Function to make histograms
+def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW,QUANTITY,CUT):
+        f = R.TFile(fileName)
+        nbins, hmin, hmax = histinfo(QUANTITY)
+        hists[CHAN][LOW] = R.TH1F(hname,'',int(nbins),hmin,hmax)
         hists[CHAN][LOW].Sumw2()
         pdfTree = f.Get('pdfTree')
-        # Resolution smearing
+        # Resolution smearing only for mass plots
         # rndm is a random value generated between 0 and 1.. pretty convienient for smearing
         pdfTree.SetAlias('z','sin(2*pi*rndm)*sqrt(-2*log(rndm))')
-        draw = 'bosonP4.mass + {SIGMA}*z >> {HISTNAME}'.format(SIGMA=sigma(CHAN),HISTNAME=hname)
-        #NEVENTS = float(pdfTree.GetEntries())
-        NEVENTS = events[LOW]
+        pdfTree.SetAlias(QUANTITY,qmap[QUANTITY])
+        draw = '{QUANTITY} + {SIGMA}*z >> {HISTNAME}'.format(QUANTITY=QUANTITY,SIGMA=sigma(CHAN,QUANTITY),HISTNAME=hname)
+        NEVENTS = events[LOW] if args.fewerEvents else int(pdfTree.GetEntries())
         if PDF=='CTEQ5L':
             XS = pdfTree.GetUserInfo().FindObject('crossSec').GetVal()
         else:
@@ -192,7 +246,7 @@ def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
                 XS = XSTABLE[PDF][MODEL][MASS][LOW]['XS']
                 #XSerr = XSTABLE[MODEL][MASS][MASSBIN]['XSerr']
         print hname, XS, LUMI, NEVENTS, XS*LUMI/NEVENTS
-        weight = '{EFF}*{XS}*{LUMI}/{NEVENTS}'.format(EFF=eff(CHAN),XS=XS,LUMI=LUMI,NEVENTS=NEVENTS)
+        weight = '{CUT}*{EFF}*{XS}*{LUMI}/{NEVENTS}'.format(EFF=eff(CHAN,QUANTITY),XS=XS,LUMI=LUMI,NEVENTS=NEVENTS,CUT=cuts[CUT])
         option = 'hist'
         #print draw,weight
         pdfTree.Draw(draw,weight,option,NEVENTS)
@@ -206,18 +260,23 @@ def makeHist(hname,fileName,CHAN,PDF,MODEL,MASS,LOW):
         print hname
         hists[CHAN][LOW].Write(hname)
 
-for CHAN in CHANNELS:
-    hists[CHAN]['sum'] = {}
-    for i,(LOW,HIGH) in enumerate(zip(MASSBINSLOW,MASSBINSHIGH)):
-        #inFileName = fileNameTmp.format(**locals())
-        inFileName = glob.glob(fileNameTmp.format(**locals()))[0]
-        HNAME = HNAMETMP.format(**locals())+'_M'+LOW+'To'+HIGH+('_Int' if 'ZPrime' in MODEL else '')+('_'+PDF if PDF else '')
-        FULLHNAME = FULLHNAMETMP.format(**locals())
-        makeHist(HNAME,inFileName,CHAN,PDF,MODEL,MASS,LOW)
-        if i==0:
-            hists[CHAN]['sum'] = hists[CHAN][LOW].Clone(FULLHNAME)
-        else:
-            hists[CHAN]['sum'].Add(hists[CHAN][LOW])
-    print FULLHNAME
-    print hists[CHAN]['sum'].GetName()
-    hists[CHAN]['sum'].Write()
+for CUT in CUTS:
+    for QUANTITY in QUANTITIES:
+        if QUANTITY=='mass' and CUT in ['high','mid','low']: continue
+        for CHAN in CHANNELS:
+            hists[CHAN]['sum'] = {}
+            for i,(LOW,HIGH) in enumerate(zip(MASSBINSLOW,MASSBINSHIGH)):
+                #inFileName = fileNameTmp.format(**locals())
+                print fileNameTmp.format(**locals())
+                inFileName = glob.glob(fileNameTmp.format(**locals()))[0]
+                HNAME = HNAMETMP.format(**locals())+'_M'+LOW+'To'+HIGH+('_Int' if 'ZPrime' in MODEL else '')+('_'+PDF if PDF else '')
+                FULLHNAME = FULLHNAMETMP.format(**locals())
+                FULLHNAME += '_'+QUANTITY + '_' + CUT
+                makeHist(HNAME,inFileName,CHAN,PDF,MODEL,MASS,LOW,QUANTITY,CUT)
+                if i==0:
+                    hists[CHAN]['sum'] = hists[CHAN][LOW].Clone(FULLHNAME)
+                else:
+                    hists[CHAN]['sum'].Add(hists[CHAN][LOW])
+            print FULLHNAME
+            print hists[CHAN]['sum'].GetName()
+            hists[CHAN]['sum'].Write()

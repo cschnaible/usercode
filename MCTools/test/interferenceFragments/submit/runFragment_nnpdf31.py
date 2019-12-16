@@ -28,7 +28,8 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
+##process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
+process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedNominalCollision2015_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
@@ -51,7 +52,8 @@ process.options = cms.untracked.PSet(
 # Other statements
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'MCRUN2_71_V1::All')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'MCRUN2_71_V1::All')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 process.load(options.fragment.split(".")[0])
 
@@ -62,6 +64,7 @@ if "ResM" in options.fragment:
 else:
 	massVal = 91.2
 process.crossSecTreeMaker =  cms.EDAnalyzer("CrossSecTreeMaker",
+                                            genRunInfoTag=cms.InputTag("generator"),
                                             mass=cms.double(massVal),
                                             datasetName=cms.string(options.fragment.split(".")[0]+".root"),
                                             datasetCode=cms.int32(datasetCode),
@@ -93,6 +96,7 @@ process.pdfWeights = cms.EDProducer("PdfWeightProducer",
 
     
 
+#if True:
 if options.cmsswOutput:
     process.outputTot = cms.OutputModule( "PoolOutputModule",
                                           fileName = cms.untracked.string(options.fragment.split(".")[0]+".root" ),
@@ -102,7 +106,8 @@ if options.cmsswOutput:
                                               dataTier = cms.untracked.string( "RAW" )
                                               ),
                                              
-                                          outputCommands = cms.untracked.vstring( 'drop *','keep recoGenParticles_genParticles_*_*')                                             )
+                                          outputCommands = cms.untracked.vstring( 'drop *','keep recoGenParticles_genParticles_*_*')
+)
     outputMod = process.outputTot
 else:
     
@@ -118,11 +123,13 @@ if isCrabJob:
     outputMod.fileName= "OUTPUTFILE"    
 
 # Path and EndPath definitions
+#if True:
 if options.cmsswOutput:
     process.generation_step = cms.Path(process.pgen)
     process.endjob_step = cms.EndPath(process.endOfProcess*process.outputTot)
 else:
-    process.generation_step = cms.Path(process.pgen*process.crossSecTreeMaker*process.pdfTreeMaker)
+    #process.generation_step = cms.Path(process.pgen*process.crossSecTreeMaker*process.pdfTreeMaker) # crossSecTreeMaker is unnecessary and doesn't work in 102X?
+    process.generation_step = cms.Path(process.pgen*process.pdfTreeMaker)
     process.endjob_step = cms.EndPath(process.endOfProcess)
 
 process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)

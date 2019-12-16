@@ -39,6 +39,7 @@
 class CrossSecTreeMaker : public edm::EDAnalyzer {
 
   TTree* tree_;
+  edm::InputTag genRunInfoTag_;
   float mass_;
   std::string datasetName_;
   int datasetCode_;
@@ -68,10 +69,12 @@ CrossSecTreeMaker::CrossSecTreeMaker(const edm::ParameterSet& iConfig)
 
 { 
 
+  genRunInfoTag_=iConfig.getParameter<edm::InputTag>("genRunInfoTag");
   mass_ = iConfig.getParameter<double>("mass");
   datasetName_ = iConfig.getParameter<std::string>("datasetName");
   datasetCode_ = iConfig.getParameter<int>("datasetCode");
   cmsEnergy_ = iConfig.getParameter<double>("cmsEnergy");
+  consumes<GenRunInfoProduct>(genRunInfoTag_);
   
 
 }
@@ -107,7 +110,7 @@ void CrossSecTreeMaker::beginJob()
 void CrossSecTreeMaker::endRun(edm::Run const& iRun, edm::EventSetup const&)
 {
   edm::Handle< GenRunInfoProduct > genInfoProduct;
-  iRun.getByLabel("generator", genInfoProduct );
+  iRun.getByLabel(genRunInfoTag_, genInfoProduct );
   crossSec_ = genInfoProduct->internalXSec().value();
   crossSecErr_ = genInfoProduct->internalXSec().error();
   tree_->Fill();

@@ -22,16 +22,32 @@ def do(cmd):
         ret = ret[0]
     return ret
 
-if args.crab in ['status','getoutput','getlog','report','kill','remake','resubmit','purge']:
+unTarLogFilesTmp = \
+'''#!/bin/bash
+pushd %s/results
+tar -xvf cmsRun_1.log.tar.gz
+popd
+'''
+
+if args.crab in ['status','getoutput','getlog','report','kill','remake','resubmit','purge','untar-log']:
     print args.crab
-    for pdf in ['CT10nlo','CT14nlo']:#['NNPDF30nlo']:
-        for model in ['ZPrimeQ']:
-            for mass in ['6000','9000']:
-                dirs = glob.glob('crab_20181010/crab_%sToEE_ResM%s_*_%s_%s'%(model,mass,pdf,args.extra))
-                for d in dirs:
-                    print d
-                    do('crab %s -d %s'%(args.crab,d))
-                    print '\n','*'*45,'\n'
+    for pdf in ['NNPDF31nnlo_PR_TuneCP5','NNPDF31nlo_TuneCP3']:
+        for model in ['ZprimeQToMuMu_M9000','DYToMuMu']:
+            dirs = glob.glob('crab/crab_%s_M-*To*_%s_*_20190227'%(model,pdf))
+            for d in dirs:
+                #if '120To200' in d: continue
+                #print d
+                #do('crab %s -d %s'%(args.crab,d))
+                #print '\n','*'*45,'\n'
+                print args.crab,d
+                unTarLogFiles = unTarLogFilesTmp%(d)
+                open('untar_log.sh','wt').write(unTarLogFiles)
+                do('bash untar_log.sh')
+                print '\n','-'*45,'\n'
+                do('ls %s/results'%d)
+                print '\n','*'*45,'\n'
+    do('rm untar_log.sh')
+    print '\n','*'*45,'\n'
 
 if args.crab=='status-resubmit':
     for pdf in ['NNPDF30nlo']:#['CT10nlo','CT14nlo']:
@@ -81,12 +97,6 @@ if args.crab=='status-getoutput-getlog':
                     do('crab getlog %s'%(d))
                 print '\n','*'*45,'\n'
 
-unTarLogFilesTmp = \
-'''#!/bin/bash
-pushd %s/results
-tar -xvf cmsRun_1.log.tar.gz
-popd
-'''
 if args.crab=='untar-log':
     for pdf in ['NNPDF30nlo']:#['CT10nlo','CT14nlo']:
         for model in ['DY']:
